@@ -8,12 +8,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-interface TransactionRepository {
+public interface TransactionRepository {
 
     CategorizedTransaction save(CategorizedTransaction transaction);
 
 
-    Boolean delete(UUID id);
+    boolean delete(UUID id);
 
     @Nullable
     CategorizedTransaction getById(UUID id);

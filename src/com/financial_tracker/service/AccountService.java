@@ -1,9 +1,8 @@
 package com.financial_tracker.service;
 
-import com.financial_tracker.domain.Account;
-import com.financial_tracker.domain.Category;
-import com.financial_tracker.domain.SubCategory;
+import com.financial_tracker.domain.*;
 import com.financial_tracker.repository.AccountRepository;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -112,6 +111,34 @@ public class AccountService {
         SubCategory subCategory = new SubCategory(name, category);
         return category.addSubCategory(subCategory);
 
+    }
+
+    public boolean addTransaction(@NotNull CategorizedTransaction transaction, UUID accountId) throws IllegalArgumentException {
+        Account account = accountRepository.getById(accountId);
+
+        if(account == null){
+            throw new IllegalArgumentException("Account not found");
+        }
+
+        if(!transaction.getAccountId().equals(accountId)){
+            throw new IllegalArgumentException("Transaction has other account id");
+        }
+
+        return  account.addTransaction(transaction.getId());
+    }
+
+    public boolean removeTransaction(@NotNull CategorizedTransaction transaction, UUID accountId) throws IllegalArgumentException {
+        Account account = accountRepository.getById(accountId);
+
+        if(account == null){
+            throw new IllegalArgumentException("Account not found");
+        }
+
+        if(!transaction.getAccountId().equals(accountId)){
+            throw new IllegalArgumentException("Transaction has other account id");
+        }
+
+        return  account.removeTransaction(transaction.getId());
     }
 
 

@@ -4,15 +4,17 @@ import com.financial_tracker.domain.Account;
 import com.financial_tracker.service.AccountService;
 
 import java.util.InputMismatchException;
-import java.util.Scanner;
 import java.util.List;
+import java.util.Scanner;
 
 public class ConsoleMenu extends Menu {
-    private AccountService accountService;
+    private final AccountService accountService;
+    private final MenuFactory menuFactory;
 
-    public ConsoleMenu(Scanner scanner, AccountService accountService) {
+    public ConsoleMenu(Scanner scanner, AccountService accountService, MenuFactory menuFactory) {
         super(scanner);
         this.accountService = accountService;
+        this.menuFactory = menuFactory;
     }
 
     public void showMenu() {
@@ -49,7 +51,7 @@ public class ConsoleMenu extends Menu {
             return;
         }
 
-        AccountMenu accountMenu = new AccountMenu(scanner, account, this.accountService);
+        AccountMenu accountMenu = menuFactory.createAccountMenu(account);
         accountMenu.showMenu();
 
     }

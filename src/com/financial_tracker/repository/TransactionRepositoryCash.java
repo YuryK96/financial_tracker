@@ -63,7 +63,7 @@ public class TransactionRepositoryCash implements TransactionRepository {
 
 
     @Override
-    public Boolean delete(UUID id) {
+    public boolean delete(UUID id) {
         int index = getIndexById(id);
         if (index == -1) {
             return false;

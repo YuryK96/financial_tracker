@@ -12,28 +12,31 @@ import java.util.Scanner;
 import java.util.UUID;
 
 public class AccountMenu extends Menu {
-    private Account account;
-    private AccountService accountService;
+    private final Account account;
+    private final AccountService accountService;
+    private final MenuFactory menuFactory;
 
-    public AccountMenu(Scanner scanner, Account account, AccountService accountService) {
+    public AccountMenu(Scanner scanner, Account account, AccountService accountService,MenuFactory menuFactory ) {
         super(scanner);
         this.account = account;
         this.accountService = accountService;
+        this.menuFactory = menuFactory;
+
     }
 
     @Override
-    public void showMenu(){
+    public void showMenu() {
         printMenuOptions();
         while (true) {
             try {
                 System.out.print("Choose option: ");
                 int option = scanner.nextInt();
 
-                if(option == 0){
+                if (option == 0) {
                     return;
                 }
 
-                if(option >=1 && option <= 9){
+                if (option >= 1 && option <= 9) {
                     this.processOption(option);
                 }
                 printMenuOptions();
@@ -46,33 +49,31 @@ public class AccountMenu extends Menu {
     }
 
     @Override
-   protected void processOption(int option){
-        switch (option){
+    protected void processOption(int option) {
+        switch (option) {
             case 1 -> showAccountInfo();
-            case 2 -> showTransactionHistory();
-            case 3 -> addCategory();
-            case 4 -> removeCategory();
-            case 5 -> addSubCategory();
-            case 6 -> removeSubCategory();
+            case 2 -> addCategory();
+            case 3 -> removeCategory();
+            case 4 -> addSubCategory();
+            case 5 -> removeSubCategory();
+            case 6 -> goToTransactionMenu();
         }
     }
 
-    private void showAccountInfo(){
+    private void goToTransactionMenu() {
+        TransactionMenu transactionMenu = menuFactory.createTransactionMenu(account);
+        transactionMenu.showMenu();
+
+    }
+
+    private void showAccountInfo() {
         System.out.println("-----Account info-----");
         System.out.println("Name: " + account.getName());
         System.out.println("Id: " + account.getId());
         showCategories();
     }
 
-    private void showTransactionHistory(){
-        List<UUID> transactionIds = account.getTransactionIds();
-        System.out.println("----- Transaction history :" + transactionIds.size() + " ------" );
-        for (UUID id: transactionIds){
-            System.out.println(id);
-            System.out.println('I');
-            System.out.println('V');
-        }
-    }
+
 
     private void addCategory() {
         System.out.print("Write a name for new category: ");
@@ -86,7 +87,7 @@ public class AccountMenu extends Menu {
             } else {
                 System.out.println("Category created successfully");
             }
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             System.out.println("Category wasnt created");
             System.out.println("ERROR: " + e.getMessage());
             System.out.println();
@@ -107,7 +108,7 @@ public class AccountMenu extends Menu {
             } else {
                 System.out.println("Removing Category was successfully");
             }
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             System.out.println("Category didnt remove");
             System.out.println("ERROR: " + e.getMessage());
             System.out.println();
@@ -123,14 +124,14 @@ public class AccountMenu extends Menu {
         System.out.print("Write a category name for: ");
         String categoryNameInput = this.scanner.nextLine();
         try {
-            SubCategory subCategory = accountService.removeSubCategoryFromAccount(subCategoryNameInput, account.getId(),categoryNameInput);
+            SubCategory subCategory = accountService.removeSubCategoryFromAccount(subCategoryNameInput, account.getId(), categoryNameInput);
 
             if (subCategory == null) {
                 System.out.println("Sub category didnt found");
             } else {
                 System.out.println("Removing Sub category was successfully");
             }
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             System.out.println("Sub category didnt remove");
             System.out.println("ERROR: " + e.getMessage());
             System.out.println();
@@ -146,14 +147,14 @@ public class AccountMenu extends Menu {
         System.out.print("Write a category name for: ");
         String categoryNameInput = this.scanner.nextLine();
         try {
-            SubCategory subCategory = accountService.addSubCategoryToAccount(subCategoryNameInput, account.getId(),categoryNameInput);
+            SubCategory subCategory = accountService.addSubCategoryToAccount(subCategoryNameInput, account.getId(), categoryNameInput);
 
             if (subCategory != null) {
                 System.out.println("Sub category was overwritten");
             } else {
                 System.out.println("Sub category created successfully");
             }
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             System.out.println("Sub category wasnt created");
             System.out.println("ERROR: " + e.getMessage());
             System.out.println();
@@ -162,38 +163,38 @@ public class AccountMenu extends Menu {
     }
 
 
-    private void showCategories(){
-     List<Category> categories = account.getCategories();
+    private void showCategories() {
+        List<Category> categories = account.getCategories();
         System.out.println("Categories: " + categories.size());
-     for (Category category: categories){
-         System.out.println("  " +category.getName());
-         showSubCategories(category);
-     }
+        for (Category category : categories) {
+            System.out.println("  " + category.getName());
+            showSubCategories(category);
+        }
     }
 
-    private void showSubCategories(@NotNull Category category){
+    private void showSubCategories(@NotNull Category category) {
         List<SubCategory> subCategories = category.getSubCategories();
 
-        if(subCategories.isEmpty()){
-           return;
+        if (subCategories.isEmpty()) {
+            return;
         }
         System.out.println("    Sub categories: " + subCategories.size());
 
-     for (SubCategory subCategory: subCategories){
-         System.out.println("      " +subCategory.getName());
-     }
+        for (SubCategory subCategory : subCategories) {
+            System.out.println("      " + subCategory.getName());
+        }
     }
 
 
     @Override
-    protected   void printMenuOptions(){
-        System.out.println("-----ACCOUNT: " + account.getName() +" ------" );
+    protected void printMenuOptions() {
+        System.out.println("-----ACCOUNT: " + account.getName() + " ------");
         System.out.println("1. Account info");
-        System.out.println("2. Transaction history");
-        System.out.println("3. Add Category");
-        System.out.println("4. Remove Category");
-        System.out.println("5. Add Sub category");
-        System.out.println("6. Remove Sub category");
+        System.out.println("2. Add Category");
+        System.out.println("3. Remove Category");
+        System.out.println("4. Add Sub category");
+        System.out.println("5. Remove Sub category");
+        System.out.println("6. Go to transaction menu");
         System.out.println("0. Back");
     }
 

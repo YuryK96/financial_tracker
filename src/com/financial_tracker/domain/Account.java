@@ -32,8 +32,12 @@ public class Account {
         return this.categories.get(categoryName);
     }
 
-    public void addTransaction(@NotNull Transaction transaction) {
-        this.transactions.add(transaction.getId());
+    public boolean addTransaction(UUID transactionId) {
+      return  this.transactions.add(transactionId);
+    }
+
+    public boolean removeTransaction(UUID transactionId) {
+        return  this.transactions.remove(transactionId);
     }
 
     public UUID getId() {
