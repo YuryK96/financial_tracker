@@ -5,6 +5,7 @@ import com.financial_tracker.domain.TransactionType;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class TransactionRepositoryCash implements TransactionRepository {
                 .filter(t -> !t.getCreateAt().isBefore(start.atStartOfDay()) && !t.getCreateAt().isAfter(end.atTime(LocalTime.MAX)))
                 .collect(Collectors.toList());
     }
+
     @Override
     public List<CategorizedTransaction> findByType(TransactionType type) {
         return transactions
@@ -91,6 +93,17 @@ public class TransactionRepositoryCash implements TransactionRepository {
 
         }
         return -1;
+    }
+
+
+    public List<CategorizedTransaction> getAccountTransactionByCreatedAt(UUID accountId, LocalDateTime start, LocalDateTime end) {
+
+        return this.transactions
+                .stream()
+                .filter(t -> t.getAccountId().equals(accountId))
+                .filter(t -> t.getCreateAt().isAfter(start) && t.getCreateAt().isBefore(end))
+                .collect(Collectors.toList());
+
     }
 
 }

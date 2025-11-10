@@ -4,6 +4,8 @@ import com.financial_tracker.domain.CategorizedTransaction;
 import com.financial_tracker.domain.Transaction;
 import com.financial_tracker.repository.TransactionRepository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class TransactionService {
@@ -51,5 +53,15 @@ public class TransactionService {
             throw e;
         }
 
+    }
+
+    public List<CategorizedTransaction> getAccountTransactionByCreatedAt (UUID accountId, LocalDateTime start, LocalDateTime end){
+        return  this.transactionRepository.getAccountTransactionByCreatedAt(accountId, start, end);
+    }
+
+    public List<CategorizedTransaction> getAccountTransactionLastDays (UUID accountId, long days){
+        LocalDateTime end = LocalDateTime.now();
+        LocalDateTime start = end.minusDays(days);
+        return  this.transactionRepository.getAccountTransactionByCreatedAt(accountId, start, end);
     }
 }

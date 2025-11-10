@@ -5,6 +5,8 @@ import com.financial_tracker.service.TransactionService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -157,7 +159,11 @@ public class TransactionMenu extends Menu {
             case 1 -> addIncomeTransaction();
             case 2 -> addExpenseTransaction();
             case 3 -> deleteTransaction();
-            case 4 -> showTransactionHistory();
+            case 4 -> showLastTransactionsByDates(7);
+            case 5 -> showLastTransactionsByDates(14);
+            case 6 -> showLastTransactionsByDates(30);
+            case 7 -> showLastTransactionsByDates(365);
+            case 8 -> showTransactionHistory();
         }
     }
 
@@ -218,6 +224,16 @@ public class TransactionMenu extends Menu {
         }
     }
 
+    private void showLastTransactionsByDates (long days){
+        List<CategorizedTransaction> transactions = transactionService.getAccountTransactionLastDays(account.getId(), days);
+        DateTimeFormatter shortStyleFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+        System.out.println("----- Transaction for the last: " + days + " days: " + transactions.size() + " ------");
+        for (CategorizedTransaction transaction: transactions){
+            printTransaction(transaction, shortStyleFormatter);
+
+        }
+    }
+
     private void deleteTransaction() {
 
         System.out.print("Give id transaction for delete: ");
@@ -247,7 +263,11 @@ public class TransactionMenu extends Menu {
         System.out.println("1. Add new Income transaction");
         System.out.println("2. Add new Expense transaction");
         System.out.println("3. Delete transaction");
-        System.out.println("4. Transaction history");
+        System.out.println("4. Show transaction for the last 7 days");
+        System.out.println("5. Show transaction for the last 14 days");
+        System.out.println("6. Show transaction for the last 30 days");
+        System.out.println("7. Show transaction for the last 365 days");
+        System.out.println("8. Transaction history");
         System.out.println("0. Back");
     }
 
@@ -260,7 +280,7 @@ public class TransactionMenu extends Menu {
         System.out.println("0. Back");
     }
 
-    private void printCreatedTransaction(CategorizedTransaction createdTransaction, TransactionType type) {
+    private void printCreatedTransaction(@NotNull CategorizedTransaction createdTransaction, TransactionType type) {
         SubCategory subCategoryNewTransaction = createdTransaction.getSubCategory();
 
         System.out.println("---------------------------------");
@@ -270,6 +290,21 @@ public class TransactionMenu extends Menu {
         System.out.println("  currency: " + createdTransaction.getCurrency());
         System.out.println("  category: " + subCategoryNewTransaction.getCategory().getName());
         System.out.println("  sub category: " + subCategoryNewTransaction.getName());
+        System.out.println("  created at: " + createdTransaction.getCreateAt());
+        System.out.println("---------------------------------");
+    }
+
+    private void printTransaction(@NotNull CategorizedTransaction transaction,  DateTimeFormatter dateTimeFormatter) {
+        SubCategory subCategoryTransaction = transaction.getSubCategory();
+
+        System.out.println("---------------------------------");
+        System.out.println("  id: " + transaction.getId());
+        System.out.println("  amount: " + transaction.getAmount());
+        System.out.println("  currency: " + transaction.getCurrency());
+        System.out.println("  type: " + transaction.getType());
+        System.out.println("  category: " + subCategoryTransaction.getCategory().getName());
+        System.out.println("  sub category: " + subCategoryTransaction.getName());
+        System.out.println("  created at: " + transaction.getCreateAt().format(dateTimeFormatter));
         System.out.println("---------------------------------");
     }
 
@@ -283,7 +318,7 @@ public class TransactionMenu extends Menu {
         System.out.println(categoryList.size() + 1 + ". " + "Back");
     }
 
-    private void printSubCategoryOptions(List<SubCategory> subCategoryList) {
+    private void printSubCategoryOptions(@NotNull List<SubCategory> subCategoryList) {
         System.out.println("-----Account Sub categories: " + subCategoryList.size() + " -------");
 
         for (int i = 0; i < subCategoryList.size(); i++) {
