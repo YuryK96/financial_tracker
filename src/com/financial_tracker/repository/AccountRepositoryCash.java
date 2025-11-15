@@ -1,6 +1,7 @@
 package com.financial_tracker.repository;
 
 import com.financial_tracker.domain.Account;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -13,11 +14,11 @@ public class AccountRepositoryCash implements AccountRepository {
 
     @Override
     public List<Account> getAll() {
-        return accounts;
+        return  new ArrayList<Account>(accounts);
     }
 
     @Override
-    public Boolean save(Account account) throws IllegalArgumentException {
+    public Boolean save(@NotNull Account account) throws IllegalArgumentException {
         Account foundAccountByName = getByName(account.getName());
 
         if (foundAccountByName != null) {
@@ -29,6 +30,11 @@ public class AccountRepositoryCash implements AccountRepository {
 
     @Override
     public Boolean delete(UUID id) {
+
+        if(id == null){
+            throw new IllegalArgumentException("Id is null");
+        }
+
         int index = getIndexById(id);
         if (index == -1) {
             return false;

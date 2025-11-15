@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class TransactionRepositoryCash implements TransactionRepository {
 
-    List<CategorizedTransaction> transactions = new ArrayList<>();
+    private List<CategorizedTransaction>  transactions = new ArrayList<>();
 
 
     @Override

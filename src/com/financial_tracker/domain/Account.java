@@ -11,20 +11,14 @@ public class Account {
     private UUID id;
     private String name;
 
-    public Account(String name) {
+    public Account(String name) throws IllegalArgumentException {
+
+        if (name == null || name.trim().equals("")) {
+            throw new IllegalArgumentException("Invalid name");
+        }
+
         this.id = UUID.randomUUID();
         this.name = name;
-    }
-
-    public Account(Category category) {
-        this.setCategory(category);
-    }
-
-
-    public Account(Category @NotNull [] categories) {
-        for (Category category : categories) {
-            this.setCategory(category);
-        }
     }
 
     @Nullable
@@ -33,11 +27,11 @@ public class Account {
     }
 
     public boolean addTransaction(UUID transactionId) {
-      return  this.transactions.add(transactionId);
+        return this.transactions.add(transactionId);
     }
 
     public boolean removeTransaction(UUID transactionId) {
-        return  this.transactions.remove(transactionId);
+        return this.transactions.remove(transactionId);
     }
 
     public UUID getId() {
@@ -50,7 +44,9 @@ public class Account {
             throw new IllegalArgumentException("Category exist with this name");
 
         }
-      return  this.categories.put(category.getName(), category);
+
+        this.categories.put(category.getName(), category);
+        return category;
     }
 
     @Nullable
@@ -58,7 +54,7 @@ public class Account {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Name cant be empty");
         }
-      return  this.categories.remove(name);
+        return this.categories.remove(name);
     }
 
     public String getName() {
@@ -73,6 +69,7 @@ public class Account {
         return new ArrayList<Category>(categories.values());
 
     }
+
     public List<UUID> getTransactionIds() {
         return new ArrayList<UUID>(transactions);
 

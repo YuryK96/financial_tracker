@@ -1,0 +1,9 @@
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/domain/AccountTest.java
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/domain/CategoryTest.java
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/domain/ExpenseTest.java
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/domain/IncomeTest.java
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/domain/SubCategoryTest.java
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/repository/AccountRepositoryCashTest.java
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/repository/TransactionRepositoryCashTest.java
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/service/AccountServiceTest.java
+/home/yk/learning/financial_tracker/src/test/java/com/financial_tracker/service/TransactionServiceTest.java

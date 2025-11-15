@@ -17,9 +17,9 @@ public class TransactionMenu extends Menu {
     private final Account account;
 
     public TransactionMenu(Scanner scanner, Account account, TransactionService transactionService) {
+        super(scanner);
         this.transactionService = transactionService;
         this.account = account;
-        super(scanner);
 
     }
 

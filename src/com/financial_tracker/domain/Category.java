@@ -34,7 +34,8 @@ public class Category {
     }
 
     public SubCategory addSubCategory(SubCategory subCategory) {
-      return  this.subCategories.put(subCategory.getName(), subCategory);
+        this.subCategories.put(subCategory.getName(), subCategory);
+        return subCategory;
     }
 
     public void addSubCategory(String name) {

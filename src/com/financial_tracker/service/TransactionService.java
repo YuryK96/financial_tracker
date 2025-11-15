@@ -38,6 +38,7 @@ public class TransactionService {
     }
 
     public boolean deleteTransaction(UUID transactionId, UUID accountId) throws IllegalArgumentException {
+
         CategorizedTransaction foundTransaction = transactionRepository.getById(transactionId);
         try {
             if(foundTransaction == null){
@@ -48,8 +49,9 @@ public class TransactionService {
             return transactionRepository.delete(foundTransaction.getId());
 
         } catch (Exception e) {
+            if(foundTransaction != null){
             accountService.removeTransaction(foundTransaction,accountId);
-            transactionRepository.delete(foundTransaction.getId());
+            transactionRepository.delete(foundTransaction.getId());}
             throw e;
         }
 

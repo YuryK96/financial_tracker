@@ -1,5 +1,7 @@
 package com.financial_tracker.domain;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Comparator;
 
 public class SubCategory implements Comparator<SubCategory> {
@@ -25,7 +27,7 @@ public class SubCategory implements Comparator<SubCategory> {
     }
 
     @Override
-    public int compare(SubCategory o1, SubCategory o2) {
+    public int compare(@NotNull SubCategory o1, @NotNull SubCategory o2) {
         return o1.name.compareTo(o2.name);
 
     }
