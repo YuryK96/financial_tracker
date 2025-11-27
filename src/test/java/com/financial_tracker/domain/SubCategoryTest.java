@@ -1,5 +1,7 @@
 package com.financial_tracker.domain;
 
+import com.financial_tracker.category_management.dto.Category;
+import com.financial_tracker.category_management.SubCategory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

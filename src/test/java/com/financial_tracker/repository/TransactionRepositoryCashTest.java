@@ -1,6 +1,13 @@
 package com.financial_tracker.repository;
 
-import com.financial_tracker.domain.*;
+import com.financial_tracker.category_management.dto.Category;
+import com.financial_tracker.category_management.SubCategory;
+import com.financial_tracker.core.transaction.Currency;
+import com.financial_tracker.core.transaction.TransactionType;
+import com.financial_tracker.transaction_processing.*;
+import com.financial_tracker.transaction_processing.dto.CategorizedTransaction;
+import com.financial_tracker.transaction_processing.dto.Expense;
+import com.financial_tracker.transaction_processing.dto.Income;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
