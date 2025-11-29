@@ -31,6 +31,9 @@ public class AccountEntity extends BaseEntity {
 
 
     public AccountEntity() {}
+    public AccountEntity(String name) {
+        this.name = name;
+    }
 
     public AccountEntity(UUID id, String name, List<TransactionEntity> transactions) {
         this.id = id;

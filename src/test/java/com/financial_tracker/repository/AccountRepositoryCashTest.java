@@ -1,7 +1,5 @@
 package com.financial_tracker.repository;
 
-import com.financial_tracker.account_management.dto.Account;
-import com.financial_tracker.account_management.AccountRepositoryCash;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

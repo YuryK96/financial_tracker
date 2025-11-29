@@ -1,175 +1,123 @@
 package com.financial_tracker.account_management;
 
-import com.financial_tracker.account_management.dto.Account;
-import com.financial_tracker.category_management.dto.Category;
-import com.financial_tracker.category_management.SubCategory;
+import com.financial_tracker.account_management.dto.AccountResponse;
+import com.financial_tracker.core.account.AccountEntity;
 import com.financial_tracker.core.account.AccountRepository;
-import com.financial_tracker.transaction_processing.dto.CategorizedTransaction;
-import org.jetbrains.annotations.NotNull;
+import com.financial_tracker.shared.dto.PageRequest;
+import com.financial_tracker.shared.dto.PageResponse;
+import jakarta.persistence.EntityNotFoundException;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
+@Service
 public class AccountService {
-    AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
+    private final AccountMapper accountMapper;
+    private static final Logger log = LoggerFactory.getLogger(AccountService.class);
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper) {
         this.accountRepository = accountRepository;
+        this.accountMapper = accountMapper;
     }
 
-    public List<Account> getAllAccounts() {
-        return this.accountRepository.getAll();
+    public PageResponse<AccountResponse> getAllAccounts(PageRequest pageRequest) {
+        log.debug("Getting all accounts - page: {}, size: {}", pageRequest.page(), pageRequest.size());
+
+        Pageable pageable = pageRequest.getPageable();
+        Page<AccountEntity> page = this.accountRepository.findAll(pageable);
+
+        return PageResponse.of(page.map(accountMapper::toResponse));
     }
 
     @Nullable
-    public Account getAccountByName(String name) {
-        return this.accountRepository.getByName(name);
+    public AccountResponse getAccountByName(String name) {
+        log.debug("Getting account by name: {}", name);
+
+        AccountEntity foundAccount = this.accountRepository.findByName(name);
+
+        if (foundAccount == null) {
+            throw new EntityNotFoundException("Account not found");
+        }
+
+        return accountMapper.toResponse(foundAccount);
     }
 
+    @Nullable
+    public AccountResponse getAccountById(UUID id) {
+        log.debug("Getting account by id: {}", id);
 
-    public boolean createAccount(String name) throws IllegalArgumentException {
+        AccountEntity foundAccount = this.accountRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Account not found")
+        );
+
+        return accountMapper.toResponse(foundAccount);
+    }
+
+    public AccountResponse createAccount(String name) throws IllegalArgumentException {
+        log.info("Creating account: {}", name);
 
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cant be empty");
+            throw new IllegalArgumentException("Name can't be empty");
         }
 
-        Account account = new Account(name);
-        return this.accountRepository.save(account);
+        AccountEntity foundAccount = this.accountRepository.findByName(name);
+
+        if (foundAccount != null) {
+            throw new IllegalArgumentException("Account already exists with name " + name);
+        }
+
+        AccountEntity account = new AccountEntity(name);
+        AccountEntity newAccount = this.accountRepository.save(account);
+
+        log.info("Account created: {} with ID: {}", name, newAccount.getId());
+        return accountMapper.toResponse(newAccount);
     }
 
+    public AccountResponse updateAccountName(String newName, UUID id) throws IllegalArgumentException {
+        log.info("Updating account ID: {} to new name: {}", id, newName);
 
-    public boolean deleteAccount(String name) throws IllegalArgumentException {
-
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cant be empty");
+        if (newName == null || id == null || newName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name can't be empty");
         }
 
-        Account account = this.accountRepository.getByName(name);
+        AccountEntity accountToUpdate = this.accountRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found with ID: " + id));
 
-        if(account == null){
-            throw new IllegalArgumentException("Account not found");
+        if (newName.equals(accountToUpdate.getName())) {
+            log.debug("Account name unchanged: {}", newName);
+            return accountMapper.toResponse(accountToUpdate);
         }
 
-        return this.accountRepository.delete(account.getId());
+        AccountEntity existingAccountWithName = this.accountRepository.findByName(newName);
+        if (existingAccountWithName != null) {
+            throw new IllegalArgumentException("Account already exists with name " + newName);
+        }
+
+        String oldName = accountToUpdate.getName();
+        accountToUpdate.setName(newName);
+        AccountEntity updatedAccount = this.accountRepository.save(accountToUpdate);
+
+        log.info("Account updated: {} -> {} (ID: {})", oldName, newName, id);
+        return accountMapper.toResponse(updatedAccount);
     }
 
+    public void deleteAccount(UUID id) throws IllegalArgumentException {
+        log.info("Deleting account: {}", id);
 
-    public Category addCategoryToAccount(String name, UUID accountId) throws IllegalArgumentException {
-
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cant be empty");
+        if (id == null) {
+            throw new IllegalArgumentException("Id can't be empty");
         }
 
-        Account account = accountRepository.getById(accountId);
+        AccountEntity account = this.accountRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
 
-        if (account == null) {
-            throw new IllegalArgumentException("Account didnt found");
-        }
-
-        Category category = new Category(name);
-
-        return account.setCategory(category);
+        this.accountRepository.deleteById(account.getId());
+        log.info("Account deleted: {} ({})", account.getName(), id);
     }
-
-    public Category removeCategoryFromAccount(String name, UUID accountId) throws IllegalArgumentException {
-
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cant be empty");
-        }
-
-        Account account = accountRepository.getById(accountId);
-
-        if (account == null) {
-            throw new IllegalArgumentException("Account didnt found");
-        }
-
-
-        return account.removeCategory(name);
-    }
-
-
-    public SubCategory addSubCategoryToAccount(String name, UUID accountId, String categoryName) throws IllegalArgumentException {
-
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cant be empty");
-        }
-
-        if (categoryName == null || categoryName.trim().isEmpty()) {
-            throw new IllegalArgumentException("category name cant be empty");
-        }
-
-        Account account = accountRepository.getById(accountId);
-
-        if (account == null) {
-            throw new IllegalArgumentException("Account didnt found");
-        }
-
-        Category category = account.getCategory(categoryName);
-
-        if (category == null) {
-            throw new IllegalArgumentException("Category didnt found");
-        }
-
-        SubCategory subCategory = new SubCategory(name, category);
-        return category.addSubCategory(subCategory);
-
-    }
-
-    public boolean addTransaction(@NotNull CategorizedTransaction transaction, UUID accountId) throws IllegalArgumentException {
-        Account account = accountRepository.getById(accountId);
-
-        if(account == null){
-            throw new IllegalArgumentException("Account not found");
-        }
-
-        if(!transaction.getAccountId().equals(accountId)){
-            throw new IllegalArgumentException("Transaction has other account id");
-        }
-
-        return  account.addTransaction(transaction.getId());
-    }
-
-    public boolean removeTransaction(@NotNull CategorizedTransaction transaction, UUID accountId) throws IllegalArgumentException {
-        Account account = accountRepository.getById(accountId);
-
-        if(account == null){
-            throw new IllegalArgumentException("Account not found");
-        }
-
-        if(!transaction.getAccountId().equals(accountId)){
-            throw new IllegalArgumentException("Transaction has other account id");
-        }
-
-        return  account.removeTransaction(transaction.getId());
-    }
-
-
-    public SubCategory removeSubCategoryFromAccount(String name, UUID accountId, String categoryName) throws IllegalArgumentException {
-
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cant be empty");
-        }
-
-        if (categoryName == null || categoryName.trim().isEmpty()) {
-            throw new IllegalArgumentException("category name cant be empty");
-        }
-
-        Account account = accountRepository.getById(accountId);
-
-        if (account == null) {
-            throw new IllegalArgumentException("Account didnt found");
-        }
-
-        Category category = account.getCategory(categoryName);
-
-        if (category == null) {
-            throw new IllegalArgumentException("Category didnt found");
-        }
-
-        return category.removeSubCategory(name);
-
-    }
-
-
 }

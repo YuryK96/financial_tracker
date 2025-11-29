@@ -1,6 +1,5 @@
 package com.financial_tracker.service;
 
-import com.financial_tracker.account_management.dto.Account;
 import com.financial_tracker.account_management.AccountService;
 import com.financial_tracker.category_management.dto.Category;
 import com.financial_tracker.category_management.SubCategory;
