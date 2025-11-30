@@ -1,8 +1,8 @@
 package com.financial_tracker.account_management;
 
 import com.financial_tracker.account_management.dto.AccountResponse;
-import com.financial_tracker.account_management.dto.Request.AccountCreate;
-import com.financial_tracker.account_management.dto.Request.AccountUpdate;
+import com.financial_tracker.account_management.dto.request.AccountCreate;
+import com.financial_tracker.account_management.dto.request.AccountUpdate;
 import com.financial_tracker.shared.dto.PageRequest;
 import com.financial_tracker.shared.dto.PageResponse;
 import org.slf4j.Logger;

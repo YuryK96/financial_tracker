@@ -1,70 +1,124 @@
 package com.financial_tracker.transaction_processing;
 
-import com.financial_tracker.account_management.AccountService;
+import com.financial_tracker.core.account.AccountEntity;
+import com.financial_tracker.core.account.AccountRepository;
+import com.financial_tracker.core.subcategory.SubcategoryEntity;
+import com.financial_tracker.core.subcategory.SubcategoryRepository;
+import com.financial_tracker.core.transaction.TransactionEntity;
 import com.financial_tracker.core.transaction.TransactionRepository;
-import com.financial_tracker.transaction_processing.dto.CategorizedTransaction;
-import com.financial_tracker.transaction_processing.dto.Transaction;
+import com.financial_tracker.shared.dto.PageRequest;
+import com.financial_tracker.shared.dto.PageResponse;
+import com.financial_tracker.transaction_processing.dto.TransactionResponse;
+import com.financial_tracker.transaction_processing.dto.request.TransactionCreate;
+import com.financial_tracker.transaction_processing.dto.request.TransactionFilter;
+import com.financial_tracker.transaction_processing.dto.request.TransactionUpdate;
+import jakarta.persistence.EntityNotFoundException;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
+@Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final AccountService accountService;
+    private final SubcategoryRepository subcategoryRepository;
+    private final AccountRepository accountRepository;
+    private final TransactionMapper transactionMapper;
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
-    public TransactionService(TransactionRepository transactionRepository, AccountService accountService) {
+    public TransactionService(TransactionRepository transactionRepository, SubcategoryRepository subcategoryRepository, AccountRepository accountRepository, TransactionMapper transactionMapper) {
+
         this.transactionRepository = transactionRepository;
-        this.accountService = accountService;
+        this.subcategoryRepository = subcategoryRepository;
+        this.accountRepository = accountRepository;
+        this.transactionMapper = transactionMapper;
     }
 
+    public PageResponse<TransactionResponse> getAllTransactionByAccountAndFilters(UUID accountId, TransactionFilter filters, PageRequest pageRequest) {
+        log.debug("Getting all transaction by filters - page: {}, size: {}", pageRequest.page(), pageRequest.size());
 
-    public CategorizedTransaction createTransaction(CategorizedTransaction transaction, UUID accountId) throws IllegalArgumentException {
-        try {
-            Transaction foundTransaction = transactionRepository.getById(transaction.getId());
+        Pageable pageable = pageRequest.getPageable();
 
-            if(foundTransaction != null){
-                throw new IllegalArgumentException("Transaction already exist");
-            }
+        log.debug("filters: {}", filters);
 
-            accountService.addTransaction(transaction, accountId);
-            return transactionRepository.save(transaction);
+        Page<TransactionEntity> page = transactionRepository.findAllByFilters(accountId, filters.subcategoryId(), filters.categoryId(), filters.currency(), filters.type(), filters.fromDate(), filters.toDate(), pageable);
 
-        } catch (Exception e) {
-            accountService.removeTransaction(transaction,accountId);
-            transactionRepository.delete(transaction.getId());
-            throw e;
+        return PageResponse.of(page.map(transactionMapper::toResponse));
+
+    }
+
+    @Nullable
+    public TransactionResponse getTransactionByAccountIdAndId(UUID accountId, UUID transactionId) {
+        log.debug("Getting transaction by id: {}", transactionId);
+
+        if (transactionId == null) {
+            throw new IllegalArgumentException("Transaction id must not be empty");
         }
 
+
+        TransactionEntity foundTransaction = transactionRepository.getByAccount_IdAndId(accountId, transactionId).orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+
+
+        return transactionMapper.toResponse(foundTransaction);
     }
 
-    public boolean deleteTransaction(UUID transactionId, UUID accountId) throws IllegalArgumentException {
 
-        CategorizedTransaction foundTransaction = transactionRepository.getById(transactionId);
-        try {
-            if(foundTransaction == null){
-                throw new IllegalArgumentException("Transaction not exist");
-            }
+    public TransactionResponse createTransaction(UUID accountId, TransactionCreate transactionCreate) throws IllegalArgumentException {
+        log.info("Creating transaction: {}", accountId, transactionCreate);
 
-            accountService.removeTransaction(foundTransaction, accountId);
-            return transactionRepository.delete(foundTransaction.getId());
 
-        } catch (Exception e) {
-            if(foundTransaction != null){
-            accountService.removeTransaction(foundTransaction,accountId);
-            transactionRepository.delete(foundTransaction.getId());}
-            throw e;
+        if (!subcategoryRepository.existsByIdAndCategory_Account_Id(transactionCreate.subcategoryId(), accountId)) {
+            throw new EntityNotFoundException("Subcategory not found");
         }
 
+        AccountEntity accountEntity = accountRepository.getReferenceById(accountId);
+        SubcategoryEntity subcategoryEntity = subcategoryRepository.getReferenceById(transactionCreate.subcategoryId());
+
+        TransactionEntity transactionEntity = transactionMapper.toEntity(transactionCreate, accountEntity, subcategoryEntity);
+
+        TransactionEntity newTransaction = transactionRepository.save(transactionEntity);
+
+        log.info("Transaction created with ID: {}", newTransaction.getId());
+        return transactionMapper.toResponse(newTransaction);
     }
 
-    public List<CategorizedTransaction> getAccountTransactionByCreatedAt (UUID accountId, LocalDateTime start, LocalDateTime end){
-        return  this.transactionRepository.getAccountTransactionByCreatedAt(accountId, start, end);
+    public TransactionResponse updateTransaction(UUID accountId, UUID transactionId, TransactionUpdate transactionUpdate) {
+        log.info("Updating transaction ID: {} for account: {}", transactionId, accountId);
+
+
+        TransactionEntity existingTransaction = transactionRepository.getByAccount_IdAndId(accountId, transactionId)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+
+
+        if (!existingTransaction.getSubCategory().getId().equals(transactionUpdate.subcategoryId())) {
+            if (!subcategoryRepository.existsByIdAndCategory_Account_Id(transactionUpdate.subcategoryId(), accountId)) {
+                throw new EntityNotFoundException("Subcategory not found for this account");
+            }
+            SubcategoryEntity newSubcategory = subcategoryRepository.getReferenceById(transactionUpdate.subcategoryId());
+            existingTransaction.setSubCategory(newSubcategory);
+        }
+
+        transactionMapper.updateEntity(transactionUpdate, existingTransaction);
+
+        TransactionEntity updatedTransaction = transactionRepository.save(existingTransaction);
+
+        log.info("Transaction updated with ID: {}", updatedTransaction.getId());
+        return transactionMapper.toResponse(updatedTransaction);
     }
 
-    public List<CategorizedTransaction> getAccountTransactionLastDays (UUID accountId, long days){
-        LocalDateTime end = LocalDateTime.now();
-        LocalDateTime start = end.minusDays(days);
-        return  this.transactionRepository.getAccountTransactionByCreatedAt(accountId, start, end);
+
+    public void deleteTransaction(UUID accountId, UUID id) {
+        log.info("Deleting transaction: {}", id);
+
+        if (!transactionRepository.existsByAccount_IdAndId(accountId, id)) {
+            throw new EntityNotFoundException("Transaction not found");
+        }
+
+        this.transactionRepository.deleteById(id);
+        log.info("Transaction deleted: {} ({})", accountId, id);
     }
 }

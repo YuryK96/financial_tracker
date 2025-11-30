@@ -10,7 +10,9 @@ public class AccountMapper {
     public AccountResponse toResponse(AccountEntity accountEntity) {
         return new AccountResponse(
                 accountEntity.getId(),
-                accountEntity.getName()
+                accountEntity.getName(),
+                accountEntity.getCreatedAt(),
+                accountEntity.getUpdatedAt()
         );
     }
 

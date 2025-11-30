@@ -2,9 +2,10 @@ package com.financial_tracker.core.category;
 
 import com.financial_tracker.core.BaseEntity;
 import com.financial_tracker.core.account.AccountEntity;
-import com.financial_tracker.core.subcategory.SubCategoryEntity;
+import com.financial_tracker.core.subcategory.SubcategoryEntity;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class CategoryEntity extends BaseEntity {
 
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<SubCategoryEntity> subCategories;
+    private List<SubcategoryEntity> subcategories;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,12 +38,19 @@ public class CategoryEntity extends BaseEntity {
     public CategoryEntity() {
     }
 
-    public CategoryEntity(String name, AccountEntity account,  List<SubCategoryEntity> subCategories, UUID id) {
+    public CategoryEntity(String name, AccountEntity account, List<SubcategoryEntity> subCategories, UUID id) {
         this.name = name;
         this.id = id;
-        this.subCategories = subCategories;
+        this.subcategories = subCategories;
         this.account = account;
     }
+
+    public CategoryEntity(String name, AccountEntity account ) {
+        this.name = name;
+        this.subcategories = new ArrayList<>();
+        this.account = account;
+    }
+
 
     public String getName() {
         return name;
@@ -73,11 +81,11 @@ public class CategoryEntity extends BaseEntity {
         this.name = name;
     }
 
-    public List<SubCategoryEntity> getSubCategories() {
-        return subCategories;
+    public List<SubcategoryEntity> getSubcategories() {
+        return subcategories;
     }
 
-    public void setSubCategories(List<SubCategoryEntity> subCategories) {
-        this.subCategories = subCategories;
+    public void setSubcategories(List<SubcategoryEntity> subCategories) {
+        this.subcategories = subCategories;
     }
 }

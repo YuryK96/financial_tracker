@@ -2,7 +2,7 @@ package com.financial_tracker.core.transaction;
 
 import com.financial_tracker.core.BaseEntity;
 import com.financial_tracker.core.account.AccountEntity;
-import com.financial_tracker.core.subcategory.SubCategoryEntity;
+import com.financial_tracker.core.subcategory.SubcategoryEntity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -34,12 +34,12 @@ public class TransactionEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id", nullable = false)
-    private SubCategoryEntity subcategory;
+    private SubcategoryEntity subcategory;
 
     public TransactionEntity() {
     }
 
-    public TransactionEntity(UUID id, BigDecimal amount, Currency currency, TransactionType type, AccountEntity account, SubCategoryEntity subCategory) {
+    public TransactionEntity(UUID id, BigDecimal amount, Currency currency, TransactionType type, AccountEntity account, SubcategoryEntity subCategory) {
         this.id = id;
         this.amount = amount;
         this.currency = currency;
@@ -88,11 +88,11 @@ public class TransactionEntity extends BaseEntity {
         this.account = account;
     }
 
-    public SubCategoryEntity getSubCategory() {
+    public SubcategoryEntity getSubCategory() {
         return subcategory;
     }
 
-    public void setSubCategory(SubCategoryEntity subCategory) {
+    public void setSubCategory(SubcategoryEntity subCategory) {
         this.subcategory = subCategory;
     }
 }

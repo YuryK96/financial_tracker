@@ -7,17 +7,17 @@ import org.springframework.data.domain.Sort;
 
 public record PageRequest(
         @Min(value = 0, message = "Page must be greater than or equal to 0")
-        int page,
+        Integer page,
         @Min(value = 1, message = "Page size must be greater than or equal to 1")
         @Max(value = 100, message = "Page size must be less than or equal to 100")
-        int size,
+        Integer size,
         String sortBy,
         Sort.Direction sortDirection
 ) {
 
     public PageRequest {
-        if (page < 0) page = 0;
-        if (size <= 0) size = 20;
+        if (page == null || page < 0) page = 0;
+        if (size == null || size <= 0) size = 20;
         if (sortBy == null) sortBy = "createdAt";
         if (sortDirection == null) sortDirection = Sort.Direction.DESC;
     }
