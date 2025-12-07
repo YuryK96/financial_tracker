@@ -66,15 +66,6 @@ public class AccountController {
 
     }
 
-    @PostMapping()
-    public ResponseEntity<AccountResponse> createAccount(
-            @RequestBody AccountCreate accountCreate) {
-
-        log.info("Creating account {}", accountCreate);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(accountCreate.name()));
-
-    }
 
 
 }

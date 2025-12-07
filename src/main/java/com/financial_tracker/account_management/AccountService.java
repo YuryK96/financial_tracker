@@ -59,7 +59,7 @@ public class AccountService {
         return accountMapper.toResponse(foundAccount);
     }
 
-    public AccountResponse createAccount(String name) throws IllegalArgumentException {
+    public AccountEntity createAccount(String name) throws IllegalArgumentException {
         log.info("Creating account: {}", name);
 
         if (name == null || name.trim().isEmpty()) {
@@ -76,7 +76,7 @@ public class AccountService {
         AccountEntity newAccount = this.accountRepository.save(account);
 
         log.info("Account created: {} with ID: {}", name, newAccount.getId());
-        return accountMapper.toResponse(newAccount);
+        return newAccount;
     }
 
     public AccountResponse updateAccountName(String newName, UUID id) throws IllegalArgumentException {

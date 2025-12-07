@@ -3,6 +3,7 @@ package com.financial_tracker.core.account;
 
 import com.financial_tracker.core.BaseEntity;
 import com.financial_tracker.core.category.CategoryEntity;
+import com.financial_tracker.core.credentials.CredentialsEntity;
 import com.financial_tracker.core.transaction.TransactionEntity;
 import jakarta.persistence.*;
 
@@ -21,6 +22,9 @@ public class AccountEntity extends BaseEntity {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
+
+    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private CredentialsEntity credentials;
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private List<CategoryEntity> categories;

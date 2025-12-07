@@ -1,0 +1,2 @@
+ALTER TABLE credentials
+ALTER COLUMN password TYPE VARCHAR(255)
