@@ -1,17 +1,19 @@
 package com.financial_tracker.category_management;
 
 
-import com.financial_tracker.category_management.dto.response.CategoryResponse;
+import com.financial_tracker.auth.CustomUserDetails;
 import com.financial_tracker.category_management.dto.request.CategoryCreate;
 import com.financial_tracker.category_management.dto.request.CategoryUpdate;
+import com.financial_tracker.category_management.dto.response.CategoryResponse;
 import com.financial_tracker.category_management.dto.response.CategoryResponseWithSubcategories;
 import com.financial_tracker.shared.dto.PageRequest;
 import com.financial_tracker.shared.dto.PageResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -31,9 +33,11 @@ public class CategoryController {
     @GetMapping("/{accountId}")
     public ResponseEntity<PageResponse<CategoryResponse>> getAllCategories
             (@PathVariable("accountId") UUID accountId,
-             PageRequest pageRequest) {
+             PageRequest pageRequest,
+             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-        log.info("Getting all categories");
+
+        log.info("Getting all categories, userId: {}", customUserDetails.getUserId());
 
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesByAccountId(accountId, pageRequest));
     }

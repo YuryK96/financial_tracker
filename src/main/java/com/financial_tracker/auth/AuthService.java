@@ -11,6 +11,7 @@ import com.financial_tracker.core.credentials.CredentialsRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,38 +25,33 @@ public class AuthService {
     private final CredentialsRepository credentialsRepository;
     private final AuthenticationManager authenticationManager;
     private final AccountService accountService;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthService(CredentialsRepository credentialsRepository, AuthenticationManager authenticationManager, AccountService accountService, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(CredentialsRepository credentialsRepository, AuthenticationManager authenticationManager, AccountService accountService, UserDetailsServiceImpl userDetailsServiceImpl, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.credentialsRepository = credentialsRepository;
         this.authenticationManager = authenticationManager;
 
         this.accountService = accountService;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
 
-    public UserDetails loadUserByUsername(String login) {
-        CredentialsEntity credentialsEntity = credentialsRepository.findByLogin(login).orElseThrow(() -> new UsernameNotFoundException(String.format("Credential with login %s not found", login)));
-
-        return new User(
-                credentialsEntity.getLogin(),
-                credentialsEntity.getPassword(),
-                Collections.emptyList()
-        );
-    }
 
     public JWTResponse login(JwtRequest jwtRequest) {
 
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+        Authentication authentication =  authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 jwtRequest.login(),
                 jwtRequest.password()
         ));
 
-        UserDetails userDetails = loadUserByUsername(jwtRequest.login());
-        String token = jwtService.generateToken(userDetails);
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+
+        String token = jwtService.generateToken(userDetails.getUsername(), userDetails.getUserId());
 
         return new JWTResponse(token);
     }
@@ -79,8 +75,8 @@ public class AuthService {
 
         credentialsRepository.save(credentials);
 
-        UserDetails userDetails = loadUserByUsername(registrationRequest.login());
-        String token = jwtService.generateToken(userDetails);
+        CustomUserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(registrationRequest.login());
+        String token = jwtService.generateToken(userDetails.getUsername(), userDetails.getUserId());
 
         return new JWTResponse(token);
     }

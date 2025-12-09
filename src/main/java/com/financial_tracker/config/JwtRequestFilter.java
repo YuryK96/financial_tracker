@@ -2,6 +2,7 @@ package com.financial_tracker.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.financial_tracker.auth.CustomUserDetails;
 import com.financial_tracker.auth.JwtService;
 import com.financial_tracker.shared.dto.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -12,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,11 +20,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 
 @Component
@@ -53,13 +52,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             String jwt = authHeader.substring(7);
 
             try {
-
                 String username = jwtService.getUserNameFromToken(jwt);
+                UUID userId = jwtService.extractUserId(jwt);
 
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                if (username != null && userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     List<GrantedAuthority> authorities = new ArrayList<>();
+
+                    CustomUserDetails customUserDetails = new CustomUserDetails(
+                            username,
+                            "",
+                            userId,
+                            authorities
+                    );
                     UsernamePasswordAuthenticationToken token =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                            new UsernamePasswordAuthenticationToken(customUserDetails, null, authorities);
 
                     SecurityContextHolder.getContext().setAuthentication(token);
                     log.debug("Authentication set for user: {}", username);

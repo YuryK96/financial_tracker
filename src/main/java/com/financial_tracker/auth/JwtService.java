@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -27,16 +28,17 @@ public class JwtService {
     private Duration jwtExpire;
 
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(String username, UUID userId) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", userDetails.getUsername());
+        claims.put("sub", username);
+        claims.put("userId", userId);
 
         log.debug("JWT Expire string {}", jwtExpire.toString());
         Date issueDate = new Date();
         Date expirationDate = new Date(issueDate.getTime() + jwtExpire.toMillis());
 
         return Jwts.builder()
-                .subject(userDetails.getUsername())
+                .subject(username)
                 .claims(claims)
                 .issuedAt(issueDate)
                 .expiration(expirationDate)
@@ -49,6 +51,11 @@ public class JwtService {
         return getAllClaimsFromToken(token).getSubject();
     }
 
+
+    public UUID extractUserId(String token) {
+        String userIdStr = getAllClaimsFromToken(token).get("userId", String.class);
+        return UUID.fromString(userIdStr);
+    }
 
     private SecretKey getSignKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
