@@ -8,7 +8,6 @@ import com.financial_tracker.category_management.dto.response.CategoryResponse;
 import com.financial_tracker.category_management.dto.response.CategoryResponseWithSubcategories;
 import com.financial_tracker.shared.dto.PageRequest;
 import com.financial_tracker.shared.dto.PageResponse;
-import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
