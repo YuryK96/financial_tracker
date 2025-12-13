@@ -21,49 +21,87 @@ import java.util.UUID;
 public class JwtService {
 
     private static final Logger log = LoggerFactory.getLogger(JwtService.class);
-    @Value("${app.jwt.secret}")
-    private String jwtSecret;
+    @Value("${app.jwt.access_secret}")
+    private String jwtAccessSecret;
 
-    @Value("${app.jwt.expire}")
-    private Duration jwtExpire;
+    @Value("${app.jwt.access_expire}")
+    private Duration jwtAccessExpire;
+
+    @Value("${app.jwt.refresh_secret}")
+    private String jwtRefreshSecret;
+
+    @Value("${app.jwt.refresh_expire}")
+    private Duration jwtRefreshExpire;
 
 
-    public String generateToken(String username, UUID userId) {
+    public String generateAccessToken(String username, UUID userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", username);
         claims.put("userId", userId);
 
-        log.debug("JWT Expire string {}", jwtExpire.toString());
+
         Date issueDate = new Date();
-        Date expirationDate = new Date(issueDate.getTime() + jwtExpire.toMillis());
+        Date expirationDate = new Date(issueDate.getTime() + jwtAccessExpire.toMillis());
 
         return Jwts.builder()
                 .subject(username)
                 .claims(claims)
                 .issuedAt(issueDate)
                 .expiration(expirationDate)
-                .signWith(getSignKey())
+                .signWith(getAccessSignKey())
                 .compact();
 
     }
 
-    public String getUserNameFromToken(String token) {
-        return getAllClaimsFromToken(token).getSubject();
+    public String generateRefreshToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", username);
+
+        Date issueDate = new Date();
+        Date expirationDate = new Date(issueDate.getTime() + jwtRefreshExpire.toMillis());
+
+        return Jwts.builder()
+                .subject(username)
+                .claims(claims)
+                .issuedAt(issueDate)
+                .expiration(expirationDate)
+                .signWith(getRefreshSignKey())
+                .compact();
+
+    }
+
+    public String getUserNameFromRefreshToken(String token) {
+        return getAllClaimsFromRefreshToken(token).getSubject();
+    }
+
+    public String getUserNameFromAccessToken(String token) {
+        return getAllClaimsFromAccessToken(token).getSubject();
     }
 
 
-    public UUID extractUserId(String token) {
-        String userIdStr = getAllClaimsFromToken(token).get("userId", String.class);
+    public UUID extractUserIdFromAccessToken(String token) {
+        String userIdStr = getAllClaimsFromAccessToken(token).get("userId", String.class);
         return UUID.fromString(userIdStr);
     }
 
-    private SecretKey getSignKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    private SecretKey getAccessSignKey() {
+        return Keys.hmacShaKeyFor(jwtAccessSecret.getBytes());
     }
 
-    private Claims getAllClaimsFromToken(String token) {
+    private SecretKey getRefreshSignKey() {
+        return Keys.hmacShaKeyFor(jwtRefreshSecret.getBytes());
+    }
+
+    private Claims getAllClaimsFromAccessToken(String token) {
         return Jwts.parser()
-                .verifyWith(getSignKey())
+                .verifyWith(getAccessSignKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+    private Claims getAllClaimsFromRefreshToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getRefreshSignKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

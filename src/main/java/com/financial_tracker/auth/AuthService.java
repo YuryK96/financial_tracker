@@ -40,10 +40,9 @@ public class AuthService {
     }
 
 
-
     public JWTResponse login(JwtRequest jwtRequest) {
 
-        Authentication authentication =  authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 jwtRequest.login(),
                 jwtRequest.password()
         ));
@@ -51,9 +50,23 @@ public class AuthService {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
 
-        String token = jwtService.generateToken(userDetails.getUsername(), userDetails.getUserId());
+        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId());
 
-        return new JWTResponse(token);
+        String refreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
+
+        return new JWTResponse(accessToken, refreshToken);
+    }
+
+
+    public JWTResponse refresh(String refreshToken) {
+
+        String username = jwtService.getUserNameFromRefreshToken(refreshToken);
+
+        CustomUserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
+        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId());
+
+
+        return new JWTResponse(accessToken, null);
     }
 
     @Transactional
@@ -76,9 +89,12 @@ public class AuthService {
         credentialsRepository.save(credentials);
 
         CustomUserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(registrationRequest.login());
-        String token = jwtService.generateToken(userDetails.getUsername(), userDetails.getUserId());
 
-        return new JWTResponse(token);
+        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId());
+
+        String refreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
+
+        return new JWTResponse(accessToken, refreshToken);
     }
 
 }

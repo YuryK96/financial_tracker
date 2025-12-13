@@ -1,5 +1,6 @@
 package com.financial_tracker.auth;
 
+import com.financial_tracker.auth.dto.request.JwtRefreshRequest;
 import com.financial_tracker.auth.dto.request.JwtRequest;
 import com.financial_tracker.auth.dto.request.RegistrationRequest;
 import com.financial_tracker.auth.dto.response.JWTResponse;
@@ -22,6 +23,11 @@ public class AuthController {
     @PostMapping("login")
     public ResponseEntity<JWTResponse> login(@RequestBody JwtRequest jwtRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.login(jwtRequest));
+    }
+
+    @PostMapping("refresh")
+    public ResponseEntity<JWTResponse> refresh(@RequestBody JwtRefreshRequest jwtRefreshRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.refresh(jwtRefreshRequest.refreshToken()));
     }
 
     @PostMapping("registration")
