@@ -36,8 +36,10 @@ jobs:
             chmod 600 traefik/acme.json
             
             docker network create web 2>/dev/null || true
-            
-            docker-compose down || true
+  
+            docker-compose stop || true
+            sleep 3
+            docker-compose rm -f || true
             docker image prune -af --filter "until=24h" 2>/dev/null || true
             
             docker volume prune -f 2>/dev/null || true
