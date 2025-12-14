@@ -1,7 +1,7 @@
 FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /workspace
 COPY . .
-RUN ./mvnw clean package
+RUN mvn clean package
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
