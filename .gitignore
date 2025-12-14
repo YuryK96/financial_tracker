@@ -20,7 +20,7 @@ bin/
 
 /nbproject/private/
 
-target
+/target
 .env
 /nbbuild/
 /dist/
