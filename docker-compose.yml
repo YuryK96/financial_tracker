@@ -37,6 +37,7 @@ services:
   app:
     build: .
     container_name: financial-tracker
+    restart: unless-stopped
     depends_on:
       - postgres
     environment:
