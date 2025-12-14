@@ -5,7 +5,7 @@ CREATE TABLE credentials
     login      VARCHAR(50) NOT NULL,
     password   VARCHAR(50) NOT NULL,
     created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP
+    updated_at TIMESTAMP         DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE credentials

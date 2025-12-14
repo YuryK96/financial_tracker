@@ -1,5 +1,0 @@
-INSERT INTO account (id, name, created_at, updated_at)
-VALUES (gen_random_uuid_v7(),
-        'Test',
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP)
