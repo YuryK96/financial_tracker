@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public record ErrorResponse(
         String message,
         String[] errors,
+
         LocalDateTime at
 ) {
 }
