@@ -50,7 +50,7 @@ public class AuthService {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
 
-        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId());
+        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId(), userDetails.getAccountId());
 
         String refreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
 
@@ -63,7 +63,7 @@ public class AuthService {
         String username = jwtService.getUserNameFromRefreshToken(refreshToken);
 
         CustomUserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
-        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId());
+        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId(), userDetails.getAccountId());
 
 
         return new JWTResponse(accessToken, null);
@@ -90,7 +90,7 @@ public class AuthService {
 
         CustomUserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(registrationRequest.login());
 
-        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId());
+        String accessToken = jwtService.generateAccessToken(userDetails.getUsername(), userDetails.getUserId(), userDetails.getAccountId());
 
         String refreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
 

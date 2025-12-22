@@ -34,10 +34,11 @@ public class JwtService {
     private Duration jwtRefreshExpire;
 
 
-    public String generateAccessToken(String username, UUID userId) {
+    public String generateAccessToken(String username, UUID userId, UUID accountId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", username);
         claims.put("userId", userId);
+        claims.put("accountId", accountId);
 
 
         Date issueDate = new Date();
@@ -82,6 +83,11 @@ public class JwtService {
     public UUID extractUserIdFromAccessToken(String token) {
         String userIdStr = getAllClaimsFromAccessToken(token).get("userId", String.class);
         return UUID.fromString(userIdStr);
+    }
+
+    public UUID extractAccountIdFromAccessToken(String token) {
+        String accountIdStr = getAllClaimsFromAccessToken(token).get("accountId", String.class);
+        return UUID.fromString(accountIdStr);
     }
 
     private SecretKey getAccessSignKey() {

@@ -1,6 +1,7 @@
 package com.financial_tracker.category_management;
 
 
+import com.financial_tracker.auth.CustomUserDetails;
 import com.financial_tracker.category_management.dto.SubcategoryResponse;
 import com.financial_tracker.category_management.dto.request.CategoryCreate;
 import com.financial_tracker.category_management.dto.request.CategoryUpdate;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,45 +28,48 @@ public class SubcategoryController {
     }
 
 
-    @GetMapping("/{accountId}/category/{categoryId}")
+    @GetMapping("/category/{categoryId}")
     public ResponseEntity<PageResponse<SubcategoryResponse>> getAllSubcategoriesByCategory
             (
-                    @PathVariable("accountId") UUID accountId,
+                    @AuthenticationPrincipal CustomUserDetails customUserDetails,
                     @PathVariable("categoryId") UUID categoryId,
                     PageRequest pageRequest) {
 
         log.info("Getting all subcategories for category {}", categoryId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(subcategoryService.getCategoriesByAccountId(accountId, categoryId, pageRequest));
+        return ResponseEntity.status(HttpStatus.OK).body(subcategoryService.getCategoriesByAccountId(customUserDetails.getAccountId(), categoryId, pageRequest));
     }
 
-    @PostMapping("/{accountId}/category/{categoryId}")
+    @PostMapping("/category/{categoryId}")
     public ResponseEntity<SubcategoryResponse> createSubcategory
-            (@PathVariable("accountId") UUID accountId,
+            (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @PathVariable("categoryId") UUID categoryId,
              @RequestBody CategoryCreate categoryCreate) {
 
         log.info("Create subcategory: ", categoryCreate);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(subcategoryService.createSubcategory(accountId, categoryId, categoryCreate));
+        return ResponseEntity.status(HttpStatus.CREATED).body(subcategoryService.createSubcategory(customUserDetails.getAccountId(), categoryId, categoryCreate));
     }
 
-    @PutMapping("/{accountId}/subcategory/{subcategoryId}")
+    @PutMapping("/subcategory/{subcategoryId}")
     public ResponseEntity<SubcategoryResponse> updateSubcategory
-            (@PathVariable("accountId") UUID accountId,
+            (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @PathVariable("subcategoryId") UUID subcategoryId,
              @RequestBody CategoryUpdate categoryUpdate) {
 
         log.info("Update subcategory: ", categoryUpdate);
 
-        return ResponseEntity.status(HttpStatus.OK).body(subcategoryService.updateCategory(accountId, subcategoryId, categoryUpdate));
+        return ResponseEntity.status(HttpStatus.OK).body(subcategoryService.updateCategory(customUserDetails.getAccountId(), subcategoryId, categoryUpdate));
     }
 
-    @DeleteMapping("/{accountId}/subcategory/{subcategoryId}")
-    public ResponseEntity<Void> deleteCategoryById(@PathVariable("accountId") UUID accountId,
-                                                   @PathVariable("subcategoryId") UUID subcategoryId) {
-        log.info("Deleting subcategory by id {}", accountId, subcategoryId);
-        subcategoryService.deleteSubcategory(accountId, subcategoryId);
+    @DeleteMapping("/subcategory/{subcategoryId}")
+    public ResponseEntity<Void> deleteCategoryById(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable("subcategoryId") UUID subcategoryId) {
+
+        log.info("Deleting subcategory by id {}", customUserDetails.getUserId(), subcategoryId);
+
+        subcategoryService.deleteSubcategory(customUserDetails.getAccountId(), subcategoryId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

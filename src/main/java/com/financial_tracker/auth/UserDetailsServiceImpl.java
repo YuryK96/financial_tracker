@@ -25,6 +25,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
                 credentialsEntity.getLogin(),
                 credentialsEntity.getPassword(),
+                credentialsEntity.getId(),
                 credentialsEntity.getAccount().getId(),
                 Collections.emptyList()
         );

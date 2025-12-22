@@ -54,6 +54,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 String username = jwtService.getUserNameFromAccessToken(jwt);
                 UUID userId = jwtService.extractUserIdFromAccessToken(jwt);
+                UUID accountId = jwtService.extractAccountIdFromAccessToken(jwt);
 
 
                 if (username != null && userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -63,6 +64,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                             username,
                             "",
                             userId,
+                            accountId,
                             authorities
                     );
                     UsernamePasswordAuthenticationToken token =

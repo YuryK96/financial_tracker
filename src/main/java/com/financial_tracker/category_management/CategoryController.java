@@ -29,65 +29,69 @@ public class CategoryController {
     }
 
 
-    @GetMapping("/{accountId}")
+    @GetMapping()
     public ResponseEntity<PageResponse<CategoryResponse>> getAllCategories
-            (@PathVariable("accountId") UUID accountId,
-             PageRequest pageRequest,
-             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+            (
+                    PageRequest pageRequest,
+                    @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
 
-        log.info("Getting all categories, userId: {}", customUserDetails.getUserId());
+        log.info("Getting all categories, userId: {}", customUserDetails.getAccountId());
 
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesByAccountId(accountId, pageRequest));
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesByAccountId(customUserDetails.getAccountId(), pageRequest));
     }
 
-    @GetMapping("/{accountId}/subcategories")
+    @GetMapping("/subcategories")
     public ResponseEntity<PageResponse<CategoryResponseWithSubcategories>> getAllCategoriesWithSubcategories
-            (@PathVariable("accountId") UUID accountId,
-             PageRequest pageRequest) {
+            (
+                    PageRequest pageRequest,
+                    @AuthenticationPrincipal CustomUserDetails customUserDetails
+            ) {
 
         log.info("Getting all categories with subcategories");
 
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesWithSubcategoriesByAccountId(accountId, pageRequest));
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesWithSubcategoriesByAccountId(customUserDetails.getAccountId(), pageRequest));
     }
 
-    @GetMapping("/{accountId}/category/{categoryId}")
+    @GetMapping("/category/{categoryId}")
     public ResponseEntity<CategoryResponse> getCategoryByAccountId
-            (@PathVariable("accountId") UUID accountId,
-             @PathVariable("categoryId") UUID categoryId,
-             PageRequest pageRequest) {
+            (
+                    @PathVariable("categoryId") UUID categoryId,
+                    PageRequest pageRequest,
+                    @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         log.info("Getting category");
 
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoryByAccountId(accountId, categoryId));
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoryByAccountId(customUserDetails.getAccountId(), categoryId));
     }
 
-    @PostMapping("/{accountId}")
+    @PostMapping()
     public ResponseEntity<CategoryResponse> createCategory
-            (@PathVariable("accountId") UUID accountId,
+            (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @RequestBody CategoryCreate categoryCreate) {
 
         log.info("Create category: ", categoryCreate);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.createCategory(accountId, categoryCreate));
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.createCategory(customUserDetails.getAccountId(), categoryCreate));
     }
 
-    @PutMapping("/{accountId}/category/{categoryId}")
+    @PutMapping("/category/{categoryId}")
     public ResponseEntity<CategoryResponse> updateCategory
-            (@PathVariable("accountId") UUID accountId,
+            (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @PathVariable("categoryId") UUID categoryId,
              @RequestBody CategoryUpdate categoryUpdate) {
 
         log.info("Update category: ", categoryUpdate);
 
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.updateCategory(accountId, categoryId, categoryUpdate));
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.updateCategory(customUserDetails.getAccountId(), categoryId, categoryUpdate));
     }
 
-    @DeleteMapping("/{accountId}/category/{categoryId}")
-    public ResponseEntity<Void> deleteCategoryById(@PathVariable("accountId") UUID accountId,
-                                                   @PathVariable("categoryId") UUID categoryId) {
-        log.info("Deleting category by id {}", accountId, categoryId);
-        categoryService.deleteCategory(accountId, categoryId);
+    @DeleteMapping("/category/{categoryId}")
+    public ResponseEntity<Void> deleteCategoryById(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable("categoryId") UUID categoryId) {
+
+        log.info("Deleting category by id {}", customUserDetails.getAccountId(), categoryId);
+
+        categoryService.deleteCategory(customUserDetails.getAccountId(), categoryId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
