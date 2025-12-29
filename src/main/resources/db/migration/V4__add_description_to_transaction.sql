@@ -1,0 +1,2 @@
+ALTER TABLE transaction
+ADD COLUMN description text;

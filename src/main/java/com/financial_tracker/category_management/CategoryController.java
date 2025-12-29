@@ -3,11 +3,13 @@ package com.financial_tracker.category_management;
 
 import com.financial_tracker.auth.CustomUserDetails;
 import com.financial_tracker.category_management.dto.request.CategoryCreate;
+import com.financial_tracker.category_management.dto.request.CategorySearch;
 import com.financial_tracker.category_management.dto.request.CategoryUpdate;
 import com.financial_tracker.category_management.dto.response.CategoryResponse;
 import com.financial_tracker.category_management.dto.response.CategoryResponseWithSubcategories;
 import com.financial_tracker.shared.dto.PageRequest;
 import com.financial_tracker.shared.dto.PageResponse;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,19 +34,19 @@ public class CategoryController {
     @GetMapping()
     public ResponseEntity<PageResponse<CategoryResponse>> getAllCategories
             (
-                    PageRequest pageRequest,
+                    @Valid CategorySearch categorySearch,
                     @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
 
         log.info("Getting all categories, userId: {}", customUserDetails.getAccountId());
 
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesByAccountId(customUserDetails.getAccountId(), pageRequest));
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesByAccountId(customUserDetails.getAccountId(), categorySearch));
     }
 
     @GetMapping("/subcategories")
     public ResponseEntity<PageResponse<CategoryResponseWithSubcategories>> getAllCategoriesWithSubcategories
             (
-                    PageRequest pageRequest,
+                    @Valid  PageRequest pageRequest,
                     @AuthenticationPrincipal CustomUserDetails customUserDetails
             ) {
 
@@ -53,11 +55,10 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesWithSubcategoriesByAccountId(customUserDetails.getAccountId(), pageRequest));
     }
 
-    @GetMapping("/category/{categoryId}")
+    @GetMapping("/{categoryId}")
     public ResponseEntity<CategoryResponse> getCategoryByAccountId
             (
                     @PathVariable("categoryId") UUID categoryId,
-                    PageRequest pageRequest,
                     @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         log.info("Getting category");
@@ -68,25 +69,25 @@ public class CategoryController {
     @PostMapping()
     public ResponseEntity<CategoryResponse> createCategory
             (@AuthenticationPrincipal CustomUserDetails customUserDetails,
-             @RequestBody CategoryCreate categoryCreate) {
+             @Valid @RequestBody CategoryCreate categoryCreate) {
 
         log.info("Create category: ", categoryCreate);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.createCategory(customUserDetails.getAccountId(), categoryCreate));
     }
 
-    @PutMapping("/category/{categoryId}")
+    @PutMapping("/{categoryId}")
     public ResponseEntity<CategoryResponse> updateCategory
             (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @PathVariable("categoryId") UUID categoryId,
-             @RequestBody CategoryUpdate categoryUpdate) {
+             @Valid    @RequestBody CategoryUpdate categoryUpdate) {
 
         log.info("Update category: ", categoryUpdate);
 
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.updateCategory(customUserDetails.getAccountId(), categoryId, categoryUpdate));
     }
 
-    @DeleteMapping("/category/{categoryId}")
+    @DeleteMapping("/{categoryId}")
     public ResponseEntity<Void> deleteCategoryById(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable("categoryId") UUID categoryId) {
 
         log.info("Deleting category by id {}", customUserDetails.getAccountId(), categoryId);

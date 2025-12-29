@@ -1,19 +1,20 @@
 package com.financial_tracker.auth.dto.request;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.jetbrains.annotations.NotNull;
 
 public record JwtRequest(
 
-        @NotNull
-        @Min(5)
-        @Max(200)
+        @NotBlank
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+        @Size(min = 3, max = 50, message = "Login must be between 3 and 50 characters")
         String login,
 
-        @NotNull
-        @Min(5)
-        @Max(200)
+        @NotBlank
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+        @Size(min = 3, max = 50, message = "Login must be between 3 and 50 characters")
         String password
 ) {
 }

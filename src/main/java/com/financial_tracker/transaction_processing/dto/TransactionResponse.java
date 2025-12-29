@@ -12,6 +12,8 @@ public record TransactionResponse(
         BigDecimal amount,
         Currency currency,
         TransactionType type,
+        UUID sourceId,
+        String description,
         LocalDateTime created_at,
         LocalDateTime updated_at
 ) {

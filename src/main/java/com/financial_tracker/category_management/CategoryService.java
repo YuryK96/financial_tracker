@@ -1,5 +1,7 @@
 package com.financial_tracker.category_management;
 
+import com.financial_tracker.category_management.dto.SubcategoryResponse;
+import com.financial_tracker.category_management.dto.request.CategorySearch;
 import com.financial_tracker.category_management.dto.response.CategoryResponse;
 import com.financial_tracker.category_management.dto.request.CategoryCreate;
 import com.financial_tracker.category_management.dto.request.CategoryUpdate;
@@ -8,12 +10,16 @@ import com.financial_tracker.core.account.AccountEntity;
 import com.financial_tracker.core.account.AccountRepository;
 import com.financial_tracker.core.category.CategoryEntity;
 import com.financial_tracker.core.category.CategoryRepository;
+import com.financial_tracker.core.subcategory.SubCategoryConstants;
 import com.financial_tracker.shared.dto.PageRequest;
 import com.financial_tracker.shared.dto.PageResponse;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -21,26 +27,29 @@ import java.util.UUID;
 @Service
 public class CategoryService {
 
+    private final SubcategoryService subcategoryService;
     private static final Logger log = LoggerFactory.getLogger(CategoryService.class);
 
     private final CategoryRepository categoryRepository;
     private final AccountRepository accountRepository;
     private final CategoryMapper categoryMapper;
 
-    public CategoryService(CategoryRepository categoryRepository, AccountRepository accountRepository, CategoryMapper categoryMapper) {
+    public CategoryService(SubcategoryService subcategoryService, CategoryRepository categoryRepository, AccountRepository accountRepository, CategoryMapper categoryMapper) {
+        this.subcategoryService = subcategoryService;
         this.categoryRepository = categoryRepository;
         this.accountRepository = accountRepository;
         this.categoryMapper = categoryMapper;
     }
 
-    public PageResponse<CategoryResponse> getCategoriesByAccountId(UUID accountId, PageRequest pageRequest) {
-        log.debug("Getting categories for account: {}, page: {}, size: {}", accountId, pageRequest.page(), pageRequest.size());
+    public PageResponse<CategoryResponse> getCategoriesByAccountId(UUID accountId, @NotNull CategorySearch categorySearch) {
+        Pageable pageable = categorySearch.getPageable();
+        log.debug("Getting categories for account: {}, page: {}, size: {}", accountId, categorySearch.pagination().page(), categorySearch.pagination().size());
 
         if (accountId == null) {
             throw new IllegalArgumentException("accountId cannot be null");
         }
 
-        Page<CategoryEntity> page = categoryRepository.findByAccount_Id(accountId, pageRequest.getPageable());
+        Page<CategoryEntity> page = categoryRepository.findByAccount_Id(accountId,  categorySearch.name(),pageable);
 
         return PageResponse.of(page.map(categoryMapper::toResponse));
     }
@@ -64,7 +73,7 @@ public class CategoryService {
             throw new IllegalArgumentException("accountId or categoryId cannot be null");
         }
 
-        CategoryEntity foundCategory = categoryRepository.findByIdAndAccount_Id( categoryId, accountId)
+        CategoryEntity foundCategory = categoryRepository.findByIdAndAccount_Id(categoryId, accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
 
         return categoryMapper.toResponse(foundCategory);
@@ -77,12 +86,13 @@ public class CategoryService {
             throw new IllegalArgumentException("accountId or name cannot be null");
         }
 
-        CategoryEntity foundCategory = categoryRepository.findByNameAndAccount_Id( name,accountId)
+        CategoryEntity foundCategory = categoryRepository.findByNameAndAccount_Id(name, accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
 
         return categoryMapper.toResponse(foundCategory);
     }
 
+    @Transactional
     public CategoryResponse createCategory(UUID accountId, CategoryCreate categoryCreate) {
         log.info("Creating category: {} for account: {}", categoryCreate.name(), accountId);
 
@@ -93,10 +103,12 @@ public class CategoryService {
                 categoryCreate.name(),
                 foundAccount
         );
-
         CategoryEntity createdCategory = categoryRepository.save(newCategory);
-
-        log.info("Category created: {} with ID: {}", categoryCreate.name(), createdCategory.getId());
+        SubcategoryResponse createdSubcategory = subcategoryService.createSubcategory(
+                accountId, createdCategory.getId(),
+                new CategoryCreate(SubCategoryConstants.DEFAULT_SUBCATEGORY_NAME)
+        );
+        log.info("Category created: {} with ID: {} and subcategory name : {}", categoryCreate.name(), createdCategory.getId(), createdSubcategory.name());
         return categoryMapper.toResponse(createdCategory);
     }
 
@@ -107,7 +119,7 @@ public class CategoryService {
             throw new IllegalArgumentException("accountId or categoryId cannot be null");
         }
 
-        CategoryEntity foundCategory = categoryRepository.findByIdAndAccount_Id( categoryId,accountId)
+        CategoryEntity foundCategory = categoryRepository.findByIdAndAccount_Id(categoryId, accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
 
         foundCategory.setName(categoryUpdate.name());
@@ -125,7 +137,7 @@ public class CategoryService {
             throw new IllegalArgumentException("accountId or categoryId cannot be null");
         }
 
-        CategoryEntity foundCategory = categoryRepository.findByIdAndAccount_Id( categoryId,accountId)
+        CategoryEntity foundCategory = categoryRepository.findByIdAndAccount_Id(categoryId, accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
 
         categoryRepository.delete(foundCategory);

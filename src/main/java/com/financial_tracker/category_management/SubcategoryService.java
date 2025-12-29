@@ -5,6 +5,7 @@ import com.financial_tracker.category_management.dto.request.CategoryCreate;
 import com.financial_tracker.category_management.dto.request.CategoryUpdate;
 import com.financial_tracker.core.category.CategoryEntity;
 import com.financial_tracker.core.category.CategoryRepository;
+import com.financial_tracker.core.subcategory.SubCategoryConstants;
 import com.financial_tracker.core.subcategory.SubcategoryEntity;
 import com.financial_tracker.core.subcategory.SubcategoryRepository;
 import com.financial_tracker.shared.dto.PageRequest;
@@ -73,6 +74,11 @@ public class SubcategoryService {
         SubcategoryEntity foundSubcategory = subcategoryRepository.findByIdAndCategory_Account_Id(subCategoryId, accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Subcategory not found"));
 
+
+        if(foundSubcategory.getName().equals( SubCategoryConstants.DEFAULT_SUBCATEGORY_NAME)){
+            throw new IllegalArgumentException("Default subcategory immutable");
+        }
+
         foundSubcategory.setName(categoryUpdate.name());
 
         SubcategoryEntity updatedCategory = subcategoryRepository.save(foundSubcategory);
@@ -90,6 +96,11 @@ public class SubcategoryService {
 
         SubcategoryEntity foundSubcategory = subcategoryRepository.findByIdAndCategory_Account_Id(subcategoryId, accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Subcategory not found"));
+
+        if(foundSubcategory.getName().equals(SubCategoryConstants.DEFAULT_SUBCATEGORY_NAME)){
+            log.warn("found subcategory was deleted: {}", foundSubcategory.getName());
+            throw new IllegalArgumentException("Default subcategory immutable");
+        }
 
         subcategoryRepository.delete(foundSubcategory);
 

@@ -1,17 +1,22 @@
 package com.financial_tracker.shared.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 public record PageRequest(
+        @Nullable
         @Min(value = 0, message = "Page must be greater than or equal to 0")
         Integer page,
+        @Nullable
         @Min(value = 1, message = "Page size must be greater than or equal to 1")
         @Max(value = 100, message = "Page size must be less than or equal to 100")
         Integer size,
+        @Nullable
         String sortBy,
+        @Nullable
         Sort.Direction sortDirection
 ) {
 

@@ -2,6 +2,7 @@ package com.financial_tracker.core.transaction;
 
 import com.financial_tracker.core.BaseEntity;
 import com.financial_tracker.core.account.AccountEntity;
+import com.financial_tracker.core.source.SourceEntity;
 import com.financial_tracker.core.subcategory.SubcategoryEntity;
 import jakarta.persistence.*;
 
@@ -17,8 +18,15 @@ public class TransactionEntity extends BaseEntity {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
+
+    @Column(name="source_id", insertable = false,updatable = false)
+    private UUID sourceId;
+
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
+
+    @Column(name = "description", nullable = true)
+    private String description;
 
     @Column(name = "currency", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -32,6 +40,11 @@ public class TransactionEntity extends BaseEntity {
     @JoinColumn(name = "account_id", nullable = false)
     private AccountEntity account;
 
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="source_id", nullable = false)
+    private SourceEntity source;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id", nullable = false)
     private SubcategoryEntity subcategory;
@@ -39,13 +52,31 @@ public class TransactionEntity extends BaseEntity {
     public TransactionEntity() {
     }
 
-    public TransactionEntity(UUID id, BigDecimal amount, Currency currency, TransactionType type, AccountEntity account, SubcategoryEntity subCategory) {
+    public TransactionEntity(UUID id, BigDecimal amount, Currency currency, TransactionType type, AccountEntity account, SubcategoryEntity subCategory, String description, SourceEntity source) {
         this.id = id;
         this.amount = amount;
         this.currency = currency;
         this.type = type;
+        this.source = source;
         this.account = account;
         this.subcategory = subCategory;
+        this.description = description;
+    }
+
+    public SubcategoryEntity getSubcategory() {
+        return subcategory;
+    }
+
+    public void setSubcategory(SubcategoryEntity subcategory) {
+        this.subcategory = subcategory;
+    }
+
+    public SourceEntity getSource() {
+        return source;
+    }
+
+    public void setSource(SourceEntity source) {
+        this.source = source;
     }
 
     public UUID getId() {
@@ -68,6 +99,14 @@ public class TransactionEntity extends BaseEntity {
         return currency;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
     public void setCurrency(Currency currency) {
         this.currency = currency;
     }
@@ -82,6 +121,9 @@ public class TransactionEntity extends BaseEntity {
 
     public AccountEntity getAccount() {
         return account;
+    }
+    public UUID getSourceId() {
+        return sourceId;
     }
 
     public void setAccount(AccountEntity account) {

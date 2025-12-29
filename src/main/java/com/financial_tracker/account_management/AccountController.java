@@ -3,6 +3,7 @@ package com.financial_tracker.account_management;
 import com.financial_tracker.account_management.dto.AccountResponse;
 import com.financial_tracker.account_management.dto.request.AccountUpdate;
 import com.financial_tracker.auth.CustomUserDetails;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,7 @@ public class AccountController {
     @PutMapping()
     public ResponseEntity<AccountResponse> updateAccount(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @RequestBody AccountUpdate accountUpdate) {
+            @Valid @RequestBody AccountUpdate accountUpdate) {
 
         log.info("Updating account {}", accountUpdate);
 

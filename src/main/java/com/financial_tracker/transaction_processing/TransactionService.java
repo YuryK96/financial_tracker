@@ -2,6 +2,8 @@ package com.financial_tracker.transaction_processing;
 
 import com.financial_tracker.core.account.AccountEntity;
 import com.financial_tracker.core.account.AccountRepository;
+import com.financial_tracker.core.source.SourceEntity;
+import com.financial_tracker.core.source.SourceRepository;
 import com.financial_tracker.core.subcategory.SubcategoryEntity;
 import com.financial_tracker.core.subcategory.SubcategoryRepository;
 import com.financial_tracker.core.transaction.TransactionEntity;
@@ -13,6 +15,7 @@ import com.financial_tracker.transaction_processing.dto.request.TransactionCreat
 import com.financial_tracker.transaction_processing.dto.request.TransactionFilter;
 import com.financial_tracker.transaction_processing.dto.request.TransactionUpdate;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +29,16 @@ import java.util.UUID;
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final SubcategoryRepository subcategoryRepository;
+    private final SourceRepository sourceRepository;
     private final AccountRepository accountRepository;
     private final TransactionMapper transactionMapper;
     private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
-    public TransactionService(TransactionRepository transactionRepository, SubcategoryRepository subcategoryRepository, AccountRepository accountRepository, TransactionMapper transactionMapper) {
+    public TransactionService(TransactionRepository transactionRepository, SubcategoryRepository subcategoryRepository, AccountRepository accountRepository, SourceRepository sourceRepository, TransactionMapper transactionMapper) {
 
         this.transactionRepository = transactionRepository;
         this.subcategoryRepository = subcategoryRepository;
+        this.sourceRepository = sourceRepository;
         this.accountRepository = accountRepository;
         this.transactionMapper = transactionMapper;
     }
@@ -78,7 +83,9 @@ public class TransactionService {
         AccountEntity accountEntity = accountRepository.getReferenceById(accountId);
         SubcategoryEntity subcategoryEntity = subcategoryRepository.getReferenceById(transactionCreate.subcategoryId());
 
-        TransactionEntity transactionEntity = transactionMapper.toEntity(transactionCreate, accountEntity, subcategoryEntity);
+        SourceEntity sourceEntity = sourceRepository.getReferenceById(transactionCreate.sourceId());
+
+        TransactionEntity transactionEntity = transactionMapper.toEntity(transactionCreate, accountEntity, subcategoryEntity, sourceEntity);
 
         TransactionEntity newTransaction = transactionRepository.save(transactionEntity);
 
@@ -86,21 +93,18 @@ public class TransactionService {
         return transactionMapper.toResponse(newTransaction);
     }
 
+    @Transactional
     public TransactionResponse updateTransaction(UUID accountId, UUID transactionId, TransactionUpdate transactionUpdate) {
-        log.info("Updating transaction ID: {} for account: {}", transactionId, accountId);
+        log.info("Updating transaction ID: {} for account: {}, DTO: {}",
+                transactionId, accountId, transactionUpdate.toString());
 
 
-        TransactionEntity existingTransaction = transactionRepository.getByAccount_IdAndId(accountId, transactionId)
+        TransactionEntity existingTransaction = transactionRepository.getByIdAndAccountIdWithSourceAndCategory(accountId, transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
 
 
-        if (!existingTransaction.getSubCategory().getId().equals(transactionUpdate.subcategoryId())) {
-            if (!subcategoryRepository.existsByIdAndCategory_Account_Id(transactionUpdate.subcategoryId(), accountId)) {
-                throw new EntityNotFoundException("Subcategory not found for this account");
-            }
-            SubcategoryEntity newSubcategory = subcategoryRepository.getReferenceById(transactionUpdate.subcategoryId());
-            existingTransaction.setSubCategory(newSubcategory);
-        }
+        updateSubcategoryIfNeed(existingTransaction, transactionUpdate, accountId);
+        updateSourceIfNeed(existingTransaction, transactionUpdate, accountId);
 
         transactionMapper.updateEntity(transactionUpdate, existingTransaction);
 
@@ -120,5 +124,48 @@ public class TransactionService {
 
         this.transactionRepository.deleteById(id);
         log.info("Transaction deleted: {} ({})", accountId, id);
+    }
+
+    private void updateSubcategoryIfNeed(TransactionEntity transaction, TransactionUpdate transactionUpdate, UUID accountId) {
+
+        if (!transactionUpdate.subcategoryId().isPresent()) {
+            return;
+        }
+
+        if (transaction.getSubcategory().getId().equals(transactionUpdate.subcategoryId().get())) {
+            return;
+        }
+
+        boolean isExist = subcategoryRepository.existsByIdAndCategory_Account_Id(transactionUpdate.subcategoryId().get(), accountId);
+
+        if (!isExist) {
+            throw new EntityNotFoundException(
+                    "Subcategory not found or doesn't belong to account");
+
+        }
+
+        transaction.setSubcategory(subcategoryRepository.getReferenceById(transactionUpdate.subcategoryId().get()));
+
+    }
+    private void updateSourceIfNeed(TransactionEntity transaction, TransactionUpdate transactionUpdate, UUID accountId) {
+
+        if (!transactionUpdate.sourceId().isPresent()) {
+            return;
+        }
+
+        if (transaction.getSource().getId().equals(transactionUpdate.sourceId().get())) {
+            return;
+        }
+
+        boolean isExist = sourceRepository.existsByIdAndAccountId(transactionUpdate.sourceId().get(), accountId);
+
+        if (!isExist) {
+            throw new EntityNotFoundException(
+                    "Source not found or doesn't belong to account");
+
+        }
+
+        transaction.setSource(sourceRepository.getReferenceById(transactionUpdate.sourceId().get()));
+
     }
 }

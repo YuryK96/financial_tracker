@@ -4,6 +4,7 @@ import com.financial_tracker.auth.dto.request.JwtRefreshRequest;
 import com.financial_tracker.auth.dto.request.JwtRequest;
 import com.financial_tracker.auth.dto.request.RegistrationRequest;
 import com.financial_tracker.auth.dto.response.JWTResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,17 +22,17 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<JWTResponse> login(@RequestBody JwtRequest jwtRequest) {
+    public ResponseEntity<JWTResponse> login( @Valid @RequestBody JwtRequest jwtRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.login(jwtRequest));
     }
 
     @PostMapping("refresh")
-    public ResponseEntity<JWTResponse> refresh(@RequestBody JwtRefreshRequest jwtRefreshRequest) {
+    public ResponseEntity<JWTResponse> refresh( @Valid @RequestBody JwtRefreshRequest jwtRefreshRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.refresh(jwtRefreshRequest.refreshToken()));
     }
 
     @PostMapping("registration")
-    public ResponseEntity<JWTResponse> registration(@RequestBody RegistrationRequest registrationRequest) {
+    public ResponseEntity<JWTResponse> registration( @Valid @RequestBody RegistrationRequest registrationRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.registration(registrationRequest));
     }
 

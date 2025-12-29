@@ -9,6 +9,7 @@ import com.financial_tracker.transaction_processing.dto.request.TransactionCreat
 import com.financial_tracker.transaction_processing.dto.request.TransactionFilter;
 import com.financial_tracker.transaction_processing.dto.request.TransactionQuery;
 import com.financial_tracker.transaction_processing.dto.request.TransactionUpdate;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,7 @@ public class TransactionController {
     @GetMapping()
     public ResponseEntity<PageResponse<TransactionResponse>> getAllTransactionByAccountAndFilters(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            TransactionQuery transactionQuery) {
+            @Valid  TransactionQuery transactionQuery) {
 
         log.info("Getting all transaction by filter {}", transactionQuery);
 
@@ -43,7 +44,7 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.OK).body(transactionService.getAllTransactionByAccountAndFilters(customUserDetails.getAccountId(), filters, pagination));
     }
 
-    @GetMapping("/transaction/{transactionId}")
+    @GetMapping("/{transactionId}")
     public ResponseEntity<TransactionResponse> getTransactionByAccountIdAndId(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("transactionId") UUID transactionId) {
@@ -57,25 +58,25 @@ public class TransactionController {
     @PostMapping()
     public ResponseEntity<TransactionResponse> createTransaction
             ( @AuthenticationPrincipal CustomUserDetails customUserDetails,
-             @RequestBody TransactionCreate transactionCreate) {
+              @Valid   @RequestBody TransactionCreate transactionCreate) {
 
         log.info("Create transaction: ", transactionCreate);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.createTransaction(customUserDetails.getAccountId(), transactionCreate));
     }
 
-    @PutMapping("/transaction/{transactionId}")
+    @PutMapping("/{transactionId}")
     public ResponseEntity<TransactionResponse> updateTransaction
             (  @AuthenticationPrincipal CustomUserDetails customUserDetails,
              @PathVariable("transactionId") UUID transactionId,
-             @RequestBody TransactionUpdate transactionUpdate) {
+               @Valid @RequestBody TransactionUpdate transactionUpdate) {
 
         log.info("Update transaction: ", transactionUpdate);
 
         return ResponseEntity.status(HttpStatus.OK).body(transactionService.updateTransaction(customUserDetails.getAccountId(), transactionId, transactionUpdate));
     }
 
-    @DeleteMapping("/transaction/{transactionId}")
+    @DeleteMapping("/{transactionId}")
     public ResponseEntity<Void> deleteTransactionById( @AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                       @PathVariable("transactionId") UUID transactionId) {
         log.info("Deleting transaction by id {}", customUserDetails.getAccountId(), transactionId);

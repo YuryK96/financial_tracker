@@ -14,6 +14,16 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 
     Optional<TransactionEntity> getByAccount_IdAndId(UUID accountId, UUID id);
 
+
+    @Query("""
+            SELECT t FROM TransactionEntity t
+            LEFT JOIN FETCH t.subcategory
+            LEFT JOIN FETCH t.source
+            WHERE t.account.id = :accountId
+            AND t.id = :id
+            """)
+    Optional<TransactionEntity> getByIdAndAccountIdWithSourceAndCategory(UUID accountId, UUID id);
+
     boolean existsByAccount_IdAndId(UUID accountId, UUID id);
 
 

@@ -7,6 +7,7 @@ import com.financial_tracker.category_management.dto.request.CategoryCreate;
 import com.financial_tracker.category_management.dto.request.CategoryUpdate;
 import com.financial_tracker.shared.dto.PageRequest;
 import com.financial_tracker.shared.dto.PageResponse;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,7 @@ public class SubcategoryController {
             (
                     @AuthenticationPrincipal CustomUserDetails customUserDetails,
                     @PathVariable("categoryId") UUID categoryId,
-                    PageRequest pageRequest) {
+                    @Valid PageRequest pageRequest) {
 
         log.info("Getting all subcategories for category {}", categoryId);
 
@@ -44,25 +45,25 @@ public class SubcategoryController {
     public ResponseEntity<SubcategoryResponse> createSubcategory
             (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @PathVariable("categoryId") UUID categoryId,
-             @RequestBody CategoryCreate categoryCreate) {
+             @Valid @RequestBody CategoryCreate categoryCreate) {
 
         log.info("Create subcategory: ", categoryCreate);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(subcategoryService.createSubcategory(customUserDetails.getAccountId(), categoryId, categoryCreate));
     }
 
-    @PutMapping("/subcategory/{subcategoryId}")
+    @PutMapping("/{subcategoryId}")
     public ResponseEntity<SubcategoryResponse> updateSubcategory
             (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @PathVariable("subcategoryId") UUID subcategoryId,
-             @RequestBody CategoryUpdate categoryUpdate) {
+             @Valid  @RequestBody CategoryUpdate categoryUpdate) {
 
         log.info("Update subcategory: ", categoryUpdate);
 
         return ResponseEntity.status(HttpStatus.OK).body(subcategoryService.updateCategory(customUserDetails.getAccountId(), subcategoryId, categoryUpdate));
     }
 
-    @DeleteMapping("/subcategory/{subcategoryId}")
+    @DeleteMapping("/{subcategoryId}")
     public ResponseEntity<Void> deleteCategoryById(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("subcategoryId") UUID subcategoryId) {

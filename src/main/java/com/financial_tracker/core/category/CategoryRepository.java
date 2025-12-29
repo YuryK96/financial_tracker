@@ -12,7 +12,12 @@ import java.util.UUID;
 public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> {
 
 
-    Page<CategoryEntity> findByAccount_Id(UUID accountId, Pageable pageable);
+    @Query("""
+SELECT c FROM CategoryEntity c 
+WHERE c.account.id = :accountId
+AND (:name IS NULL OR LOWER(c.name) LIKE  CONCAT( '%', LOWER(:name), '%')   )
+""")
+    Page<CategoryEntity> findByAccount_Id(UUID accountId,String name, Pageable pageable);
 
 
     Optional<CategoryEntity> findByIdAndAccount_Id(UUID id, UUID accountId);
