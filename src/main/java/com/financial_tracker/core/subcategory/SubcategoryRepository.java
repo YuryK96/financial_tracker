@@ -15,6 +15,7 @@ public interface SubcategoryRepository extends JpaRepository<SubcategoryEntity, 
             Pageable pageable
     );
 
+
     Optional<SubcategoryEntity> findByIdAndCategory_Account_Id(
            UUID id,UUID accountId
     );

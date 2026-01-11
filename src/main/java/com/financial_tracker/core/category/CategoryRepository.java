@@ -15,7 +15,7 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> 
     @Query("""
 SELECT c FROM CategoryEntity c 
 WHERE c.account.id = :accountId
-AND (:name IS NULL OR LOWER(c.name) LIKE  CONCAT( '%', LOWER(:name), '%')   )
+AND (:name IS NULL OR LOWER(c.name) LIKE  CONCAT( '%', CAST(:name AS string), '%')   )
 """)
     Page<CategoryEntity> findByAccount_Id(UUID accountId,String name, Pageable pageable);
 
@@ -25,9 +25,11 @@ AND (:name IS NULL OR LOWER(c.name) LIKE  CONCAT( '%', LOWER(:name), '%')   )
 
     Optional<CategoryEntity> findByNameAndAccount_Id(String name, UUID accountId);
 
-    @EntityGraph(attributePaths = {
-            "subcategories"
-    })
-    @Query("SELECT c FROM CategoryEntity c WHERE c.account.id = :accountId")
+    @Query("""
+    SELECT c FROM CategoryEntity c 
+    LEFT JOIN FETCH c.subcategories s
+    WHERE c.account.id = :accountId
+    """)
     Page<CategoryEntity> findByAccountIdWithSubcategories(UUID accountId, Pageable pageable);
+
 }

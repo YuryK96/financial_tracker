@@ -5,6 +5,7 @@ import com.financial_tracker.core.BaseEntity;
 import com.financial_tracker.core.category.CategoryEntity;
 import com.financial_tracker.core.transaction.TransactionEntity;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Formula;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,8 @@ public class SubcategoryEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Formula("(SELECT COUNT(*) FROM transaction t WHERE t.subcategory_id = id)")
+    private Long transaction_count;
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
@@ -41,6 +44,9 @@ public class SubcategoryEntity extends BaseEntity {
         this.id = id;
 
     }
+
+
+
     public SubcategoryEntity(String name, CategoryEntity  category) {
         this.name = name;
         this.transactions = new ArrayList<>();
@@ -48,6 +54,9 @@ public class SubcategoryEntity extends BaseEntity {
 
     }
 
+    public Long getTransactionCount() {
+        return transaction_count != null ? transaction_count : 0L;
+    }
     public String getName() {
         return name;
     }

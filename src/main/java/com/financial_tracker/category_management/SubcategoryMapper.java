@@ -11,6 +11,7 @@ public class SubcategoryMapper {
         return new SubcategoryResponse(
                 subcategoryEntity.getId(),
                 subcategoryEntity.getName(),
+                subcategoryEntity.getTransactionCount(),
                 subcategoryEntity.getCreatedAt(),
                 subcategoryEntity.getUpdatedAt()
         );
