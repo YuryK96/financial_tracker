@@ -2,6 +2,7 @@ package com.financial_tracker.core.transaction;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,6 +30,8 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 
     @Query("""
             SELECT t FROM TransactionEntity AS t
+            LEFT JOIN FETCH t.subcategory
+            LEFT JOIN FETCH t.source
             WHERE t.account.id = :accountId
             AND (:subcategoryId IS NULL OR t.subcategory.id = :subcategoryId)            
             AND (:categoryId IS NULL OR t.subcategory.category.id = :categoryId)         

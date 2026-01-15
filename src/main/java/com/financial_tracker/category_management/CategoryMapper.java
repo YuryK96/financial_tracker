@@ -10,11 +10,8 @@ import java.util.Optional;
 @Component
 public class CategoryMapper {
 
-    private final SubcategoryMapper subcategoryMapper;
+    public CategoryMapper() {
 
-
-    public CategoryMapper(SubcategoryMapper subcategoryMapper) {
-        this.subcategoryMapper = subcategoryMapper;
     }
 
     public CategoryResponse toResponse(CategoryEntity categoryEntity) {
@@ -33,7 +30,7 @@ public class CategoryMapper {
                 categoryEntity.getCreatedAt(),
                 categoryEntity.getUpdatedAt(),
                 categoryEntity.getSubcategories().stream()
-                        .map(subcategoryMapper::toResponse)
+                        .map(SubcategoryMapper::toResponse)
                         .toList()
         );
     }

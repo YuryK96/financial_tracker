@@ -22,7 +22,7 @@ public class SourceMapper {
 
     }
 
-    static SourceResponse toResponse(SourceEntity sourceEntity) {
+    public static SourceResponse toResponse(SourceEntity sourceEntity) {
         return new SourceResponse(
                 sourceEntity.getId(),
                 sourceEntity.getName(),

@@ -25,12 +25,11 @@ public class SubcategoryService {
 
     private final SubcategoryRepository subcategoryRepository;
     private final CategoryRepository categoryRepository;
-    private final SubcategoryMapper subcategoryMapper;
 
-    public SubcategoryService(SubcategoryRepository subcategoryRepository, CategoryRepository categoryRepository, SubcategoryMapper subcategoryMapper) {
+
+    public SubcategoryService(SubcategoryRepository subcategoryRepository, CategoryRepository categoryRepository) {
         this.subcategoryRepository = subcategoryRepository;
         this.categoryRepository = categoryRepository;
-        this.subcategoryMapper = subcategoryMapper;
     }
 
     public PageResponse<SubcategoryResponse> getCategoriesByAccountId(UUID accountId, UUID categoryId, PageRequest pageRequest) {
@@ -43,7 +42,7 @@ public class SubcategoryService {
 
         Page<SubcategoryEntity> subcategories = subcategoryRepository.findByCategory_IdAndCategory_Account_Id(categoryId, accountId, pageRequest.getPageable());
 
-        return PageResponse.of(subcategories.map(subcategoryMapper::toResponse));
+        return PageResponse.of(subcategories.map(SubcategoryMapper::toResponse));
     }
 
     public SubcategoryResponse createSubcategory(UUID accountId, UUID categoryId, CategoryCreate categoryCreate) {
@@ -61,7 +60,7 @@ public class SubcategoryService {
         SubcategoryEntity createdCategory = subcategoryRepository.save(newSubcategory);
 
         log.info("Subcategory created: {} with ID: {}", categoryCreate.name(), createdCategory.getId());
-        return subcategoryMapper.toResponse(createdCategory);
+        return SubcategoryMapper.toResponse(createdCategory);
     }
 
     public SubcategoryResponse updateCategory(UUID accountId, UUID subCategoryId, CategoryUpdate categoryUpdate) {
@@ -84,7 +83,7 @@ public class SubcategoryService {
         SubcategoryEntity updatedCategory = subcategoryRepository.save(foundSubcategory);
 
         log.info("Subcategory updated: {} with new name: {}", subCategoryId, categoryUpdate.name());
-        return subcategoryMapper.toResponse(updatedCategory);
+        return SubcategoryMapper.toResponse(updatedCategory);
     }
 
     public void deleteSubcategory(UUID accountId, UUID subcategoryId) {

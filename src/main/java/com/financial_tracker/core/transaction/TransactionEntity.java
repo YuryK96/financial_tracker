@@ -137,4 +137,20 @@ public class TransactionEntity extends BaseEntity {
     public void setSubCategory(SubcategoryEntity subCategory) {
         this.subcategory = subCategory;
     }
+
+    @Override
+    public String toString(){
+        return "TransactionEntity{" +
+                "id=" + id +
+                ", amount=" + amount +
+                ", currency=" + currency +
+                ", type=" + type +
+                ", description=" + description +
+                ", account=" + (account != null ? account.getId() : "null") +
+                ", subcategory=" + (subcategory != null ? subcategory.getId() : "null") +
+                ", source=" + (source != null ? source.getId() : "null") +
+                ", sourceId=" + sourceId +
+                '}';
+
+    }
 }

@@ -90,4 +90,16 @@ public class SubcategoryEntity extends BaseEntity {
     public void setTransactions(List<TransactionEntity> transactions) {
         this.transactions = transactions;
     }
+
+    @Override
+    public String toString() {
+        return "SubcategoryEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", transactionCount=" + getTransactionCount() +
+                ", category=" + (category != null ?
+                "Category{id=" + category.getId() + ", name='" + category.getName() + "'}"
+                : "null") +
+                '}';
+    }
 }

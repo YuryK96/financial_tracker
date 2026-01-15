@@ -88,4 +88,5 @@ public class CategoryEntity extends BaseEntity {
     public void setSubcategories(List<SubcategoryEntity> subCategories) {
         this.subcategories = subCategories;
     }
+
 }

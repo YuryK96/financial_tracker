@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SubcategoryMapper {
 
-    public SubcategoryResponse toResponse(SubcategoryEntity subcategoryEntity) {
+    public static SubcategoryResponse toResponse(SubcategoryEntity subcategoryEntity) {
         return new SubcategoryResponse(
                 subcategoryEntity.getId(),
                 subcategoryEntity.getName(),

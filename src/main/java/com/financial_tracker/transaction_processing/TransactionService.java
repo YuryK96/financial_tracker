@@ -52,7 +52,9 @@ public class TransactionService {
 
         Page<TransactionEntity> page = transactionRepository.findAllByFilters(accountId, filters.subcategoryId(), filters.categoryId(), filters.currency(), filters.type(), filters.fromDate(), filters.toDate(), pageable);
 
-        return PageResponse.of(page.map(transactionMapper::toResponse));
+
+
+        return PageResponse.of(page.map(transactionMapper::toResponseWithSourceAndCategory));
 
     }
 
@@ -65,10 +67,10 @@ public class TransactionService {
         }
 
 
-        TransactionEntity foundTransaction = transactionRepository.getByAccount_IdAndId(accountId, transactionId).orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+        TransactionEntity foundTransaction = transactionRepository.getByIdAndAccountIdWithSourceAndCategory(accountId, transactionId).orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
 
 
-        return transactionMapper.toResponse(foundTransaction);
+        return transactionMapper.toResponseWithSourceAndCategory(foundTransaction);
     }
 
 
