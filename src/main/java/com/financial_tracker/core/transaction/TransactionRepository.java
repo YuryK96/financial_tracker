@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,6 +28,31 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 
     boolean existsByAccount_IdAndId(UUID accountId, UUID id);
 
+
+
+    @Query("""
+        SELECT 
+            NEW com.financial_tracker.core.transaction.TransactionCount(
+                t.subcategory.id,
+                COUNT(t)
+            )
+        FROM TransactionEntity t
+        WHERE t.subcategory.id IN :subcategoryIds
+        GROUP BY t.subcategory.id
+        """)
+    List<TransactionCount> findTransactionCountsInSubcategories(@Param("subcategoryIds") List<UUID> subcategoryIds);
+
+    @Query("""
+        SELECT 
+            NEW com.financial_tracker.core.transaction.TransactionCount(
+                t.source.id,
+                COUNT(t)
+            )
+        FROM TransactionEntity t
+        WHERE t.source.id IN :sourceIds
+        GROUP BY t.source.id
+        """)
+    List<TransactionCount> findTransactionCountsInSources(@Param("sourceIds") List<UUID> sourceIds);
 
     @Query("""
             SELECT t FROM TransactionEntity AS t

@@ -1,16 +1,19 @@
 package com.financial_tracker.category_management;
 
 import com.financial_tracker.category_management.dto.SubcategoryResponse;
-import com.financial_tracker.category_management.dto.request.CategorySearch;
-import com.financial_tracker.category_management.dto.response.CategoryResponse;
 import com.financial_tracker.category_management.dto.request.CategoryCreate;
+import com.financial_tracker.category_management.dto.request.CategorySearch;
 import com.financial_tracker.category_management.dto.request.CategoryUpdate;
-import com.financial_tracker.category_management.dto.response.CategoryResponseWithSubcategories;
+import com.financial_tracker.category_management.dto.response.CategoryResponse;
+import com.financial_tracker.category_management.dto.response.CategoryResponseWithSubcategoriesAndCount;
 import com.financial_tracker.core.account.AccountEntity;
 import com.financial_tracker.core.account.AccountRepository;
 import com.financial_tracker.core.category.CategoryEntity;
 import com.financial_tracker.core.category.CategoryRepository;
 import com.financial_tracker.core.subcategory.SubCategoryConstants;
+import com.financial_tracker.core.subcategory.SubcategoryEntity;
+import com.financial_tracker.core.transaction.TransactionCount;
+import com.financial_tracker.core.transaction.TransactionRepository;
 import com.financial_tracker.shared.dto.PageRequest;
 import com.financial_tracker.shared.dto.PageResponse;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,7 +25,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -32,12 +39,14 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
     private final CategoryMapper categoryMapper;
 
-    public CategoryService(SubcategoryService subcategoryService, CategoryRepository categoryRepository, AccountRepository accountRepository, CategoryMapper categoryMapper) {
+    public CategoryService(SubcategoryService subcategoryService, CategoryRepository categoryRepository, AccountRepository accountRepository, CategoryMapper categoryMapper,TransactionRepository transactionRepository ) {
         this.subcategoryService = subcategoryService;
         this.categoryRepository = categoryRepository;
         this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
         this.categoryMapper = categoryMapper;
     }
 
@@ -54,7 +63,7 @@ public class CategoryService {
         return PageResponse.of(page.map(categoryMapper::toResponse));
     }
 
-    public PageResponse<CategoryResponseWithSubcategories> getCategoriesWithSubcategoriesByAccountId(UUID accountId, PageRequest pageRequest) {
+    public PageResponse<CategoryResponseWithSubcategoriesAndCount> getCategoriesWithSubcategoriesByAccountId(UUID accountId, PageRequest pageRequest) {
         log.debug("Getting categories with subcategories for account: {}, page: {}, size: {}", accountId, pageRequest.page(), pageRequest.size());
 
         if (accountId == null) {
@@ -63,8 +72,28 @@ public class CategoryService {
 
         Page<CategoryEntity> page = categoryRepository.findByAccountIdWithSubcategories(accountId, pageRequest.getPageable());
 
-        return PageResponse.of(page.map(categoryMapper::toResponseWithSubcategories));
+        List<UUID> subcategoryIds = page.getContent().stream()
+                .flatMap(category -> category.getSubcategories().stream())
+                .map(SubcategoryEntity::getId)
+                .collect(Collectors.toList());
+
+        Map<UUID, Long> transactionCounts = subcategoryIds.isEmpty()
+                ? Collections.emptyMap()
+                : transactionRepository.findTransactionCountsInSubcategories(subcategoryIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        TransactionCount::itemId,
+                        TransactionCount::count
+                ));
+
+        Page<CategoryResponseWithSubcategoriesAndCount> resultPage = page.map(category ->
+                categoryMapper.toResponseWithSubcategories(category, transactionCounts)
+        );
+
+        return PageResponse.of(resultPage);
     }
+
+
 
     public CategoryResponse getCategoryByAccountId(UUID accountId, UUID categoryId) {
         log.debug("Getting category by id: {} for account: {}", categoryId, accountId);

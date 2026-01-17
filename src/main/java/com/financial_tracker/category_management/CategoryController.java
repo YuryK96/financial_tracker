@@ -7,6 +7,7 @@ import com.financial_tracker.category_management.dto.request.CategorySearch;
 import com.financial_tracker.category_management.dto.request.CategoryUpdate;
 import com.financial_tracker.category_management.dto.response.CategoryResponse;
 import com.financial_tracker.category_management.dto.response.CategoryResponseWithSubcategories;
+import com.financial_tracker.category_management.dto.response.CategoryResponseWithSubcategoriesAndCount;
 import com.financial_tracker.shared.dto.PageRequest;
 import com.financial_tracker.shared.dto.PageResponse;
 import jakarta.validation.Valid;
@@ -37,14 +38,13 @@ public class CategoryController {
                     @Valid CategorySearch categorySearch,
                     @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-
         log.info("Getting all categories, userId: {}", customUserDetails.getAccountId());
 
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.getCategoriesByAccountId(customUserDetails.getAccountId(), categorySearch));
     }
 
     @GetMapping("/subcategories")
-    public ResponseEntity<PageResponse<CategoryResponseWithSubcategories>> getAllCategoriesWithSubcategories
+    public ResponseEntity<PageResponse<CategoryResponseWithSubcategoriesAndCount>> getAllCategoriesWithSubcategories
             (
                     @Valid  PageRequest pageRequest,
                     @AuthenticationPrincipal CustomUserDetails customUserDetails

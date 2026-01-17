@@ -56,7 +56,6 @@ public class TransactionMapper {
             subcategoryResponse = new SubcategoryResponse(
                     transactionEntity.getSubcategory().getId(),
                     transactionEntity.getSubcategory().getName(),
-                    transactionEntity.getSubcategory().getTransactionCount(),
                     transactionEntity.getSubcategory().getCreatedAt(),
                     transactionEntity.getSubcategory().getUpdatedAt()
             );

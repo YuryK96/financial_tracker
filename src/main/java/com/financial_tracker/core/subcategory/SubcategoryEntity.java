@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Table(name = "subcategory")
 @Entity
 public class SubcategoryEntity extends BaseEntity {
@@ -20,8 +22,6 @@ public class SubcategoryEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Formula("(SELECT COUNT(*) FROM transaction t WHERE t.subcategory_id = id)")
-    private Long transaction_count;
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
@@ -29,7 +29,7 @@ public class SubcategoryEntity extends BaseEntity {
     @OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL)
     private List<TransactionEntity> transactions;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
 
     @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
@@ -54,9 +54,6 @@ public class SubcategoryEntity extends BaseEntity {
 
     }
 
-    public Long getTransactionCount() {
-        return transaction_count != null ? transaction_count : 0L;
-    }
     public String getName() {
         return name;
     }
@@ -96,7 +93,6 @@ public class SubcategoryEntity extends BaseEntity {
         return "SubcategoryEntity{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", transactionCount=" + getTransactionCount() +
                 ", category=" + (category != null ?
                 "Category{id=" + category.getId() + ", name='" + category.getName() + "'}"
                 : "null") +

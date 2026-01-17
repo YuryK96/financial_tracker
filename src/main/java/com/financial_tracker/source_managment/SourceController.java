@@ -7,6 +7,7 @@ import com.financial_tracker.shared.dto.PageResponse;
 import com.financial_tracker.source_managment.dto.request.CreateSource;
 import com.financial_tracker.source_managment.dto.request.UpdateSource;
 import com.financial_tracker.source_managment.dto.response.SourceResponse;
+import com.financial_tracker.source_managment.dto.response.SourceResponseWithTransaction;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class SourceController {
     }
 
     @GetMapping()
-    public ResponseEntity<PageResponse<SourceResponse>> getAllSources(
+    public ResponseEntity<PageResponse<SourceResponseWithTransaction>> getAllSources(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @Valid PageRequest pageRequest
     ) {
