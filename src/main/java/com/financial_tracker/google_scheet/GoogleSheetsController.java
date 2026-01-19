@@ -1,6 +1,5 @@
-package com.financial_tracker.core.google_token.account;
+package com.financial_tracker.google_scheet;
 
-import com.financial_tracker.google_scheet.GoogleSheetsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;

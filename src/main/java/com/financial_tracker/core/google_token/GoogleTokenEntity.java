@@ -1,4 +1,4 @@
-package com.financial_tracker.core.google_token.account;
+package com.financial_tracker.core.google_token;
 
 import com.financial_tracker.core.account.AccountEntity;
 import jakarta.persistence.*;
