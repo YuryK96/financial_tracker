@@ -23,9 +23,12 @@ jobs:
             
             cat > .env <<'EOF'
             DOMAIN=${{ vars.DOMAIN }}
+            GOOGLE_REDIRECT_URI=${{ vars.GOOGLE_REDIRECT_URI }}
             ACME_EMAIL=${{ vars.ACME_EMAIL }}
             DB_URL=${{ secrets.DB_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
             JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
