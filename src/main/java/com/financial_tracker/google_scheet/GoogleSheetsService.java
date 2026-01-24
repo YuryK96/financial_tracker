@@ -38,9 +38,14 @@ public class GoogleSheetsService {
 
 
     private GoogleTokenRepository googleTokenRepository;
-
-
     private AccountRepository accountRepository;
+
+
+    GoogleSheetsService(GoogleTokenRepository googleTokenRepository, AccountRepository accountRepository) {
+        this.googleTokenRepository = googleTokenRepository;
+        this.accountRepository = accountRepository;
+
+    }
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
